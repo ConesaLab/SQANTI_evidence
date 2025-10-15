@@ -96,7 +96,7 @@ rule agat_cleaning:
     resources:
         slurm_extra = f"'--qos={config.resources.small.qos}'",
         cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
+        mem = config.resources.medium.mem,
         runtime =  config.resources.small.time
     log:
         os.path.join(dir.logs, "agat_cleaning.log")

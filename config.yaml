@@ -3,12 +3,7 @@ required:
   input: ""
   outdir: "results"
   toolsdir: "/home/pabloati/Programs/lr_annotation"
-  samples_setup: "data/experiment_setup.tsv"
-isoseq:
-  primers: "data/original_primers.fasta"
-  primers_to_samples: "primers_sample.csv"
 augustus:
-  prediction: evidence_driven
   reference_gtf: "data/mm39.ncbiRefSeq.gtf"
   species_name: "trial"
   utr: True

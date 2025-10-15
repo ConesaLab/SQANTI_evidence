@@ -3,6 +3,8 @@ import subprocess
 import os,sys,yaml
 import argparse
 
+from scripts.input_check import check_inputs
+
 def load_configfile(file):
     if not os.path.exists(file):
         sys.exit("Unable to locate the config file; tried %s" % file)
@@ -17,6 +19,7 @@ def get_snakefile(file="snakefile"):
 
 def run_smk(conf,jobs,dryrun,unlock,rerun_incomplete,slurm,extras,slurm_extras):
     config = load_configfile(conf)
+    check_inputs(config)
     sf = get_snakefile()
     conda_prefix = os.path.join(config["required"].get('toolsdir', None),"conda_envs")
     cmd = f'snakemake all -s {sf} --configfile {conf} --use-conda --conda-prefix {conda_prefix} -j {jobs}'

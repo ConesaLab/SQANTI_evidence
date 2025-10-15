@@ -5,6 +5,7 @@ config = ap.AttrMap(config)
 
 localrules: all, install_tama, install_sqanti
 # Setup rules
+include: os.path.join("rules","setup","preflight.smk")
 include: os.path.join("rules","setup","directories.smk")
 include: os.path.join("rules","setup","installations.smk")
 include: os.path.join("rules","setup","functions.smk")
@@ -23,6 +24,7 @@ include: os.path.join("rules","quality_control.smk")
 
 rule all:
     input:
+        "input_checked.txt",
         os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff"),
         os.path.join(dir.out.qc_omark,"Final.pdf"),
         os.path.join(dir.out.qc_busco),

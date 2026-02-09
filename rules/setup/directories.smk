@@ -9,14 +9,14 @@ dir = ap.AttrMap()
 
 try:
     assert (ap.utils.to_dict(config.args)["busco_db"]) is not None
-    dir.busco_db = config.args.busco_db
+    dir.busco_db = str(config.args.busco_db)
 except (KeyError, AssertionError):
     dir.busco_db = os.path.join(workflow.basedir, "..", "databases", "busco")
 
 ### Output_location
 try:
     assert config.required.outdir is not None
-    dir.out.base = config.required.outdir
+    dir.out.base = str(config.required.outdir)
 except (KeyError, AssertionError):
     dir.out.base = "evidence_annot"
 
@@ -26,7 +26,7 @@ dir.rules = os.path.join(workflow.basedir, "rules")
 dir.scripts = os.path.join(workflow.basedir, "scripts")
 
 ### Tools directories
-dir.tools = os.path.join(config.required.toolsdir)
+dir.tools = str(config.required.toolsdir)
 dir.tools_conda = os.path.join(dir.tools, "conda_envs")
 dir.tools_tama = os.path.join(dir.tools, "tama")
 dir.tools_db = os.path.join(dir.tools, "databases")

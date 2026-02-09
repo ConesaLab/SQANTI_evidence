@@ -31,7 +31,7 @@ rule lima:
     log:
         os.path.join(dir.logs,"lima_demultiplexing_{sample}.log")
     threads:
-        config.resources.big.cpus,
+        config.resources.big.get("cpus", 4)
     resources:
         slurm_extra = f"'--qos={config.resources.big.qos}'",
         cpus_per_task = config.resources.big.cpus,
@@ -56,7 +56,7 @@ rule refine:
     params:
         primers = config.isoseq.primers
     threads:
-        config.resources.small.cpus,
+        config.resources.small.get("cpus", 4)
     resources:
         slurm_extra = f"'--qos={config.resources.small.qos}'",
         cpus_per_task = config.resources.small.cpus,
@@ -89,7 +89,7 @@ rule cluster:
     log:
         os.path.join(dir.logs,"isoseq_cluster_{sample}.log")
     threads:
-        config.resources.small.cpus,
+        config.resources.small.get("cpus", 4)
     resources:
         slurm_extra = f"'--qos={config.resources.medium.qos}'",
         cpus_per_task = config.resources.medium.cpus,

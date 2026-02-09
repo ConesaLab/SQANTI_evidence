@@ -9,8 +9,8 @@ include: os.path.join("rules","setup","directories.smk")
 include: os.path.join("rules","setup","installations.smk")
 include: os.path.join("rules","setup","functions.smk")
 
-sample,filetype = get_sample_name(config.required.input)
-genome_name = get_genome_name(config.required.genome)
+sample,filetype = get_sample_name(str(config.required.input))
+genome_name = get_genome_name(str(config.required.genome))
 
 
 include: os.path.join("rules","transcript_modelling.smk")

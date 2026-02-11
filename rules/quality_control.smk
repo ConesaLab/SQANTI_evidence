@@ -165,11 +165,6 @@ rule gaqet2:
         cpus_per_task = config.resources.medium.cpus,
         mem = config.resources.big.mem,
         runtime =  config.resources.medium.time
-    params:
-        id = config.augustus.species,
-        busco_lineage = config.busco.lineage,
-        os.path.join(dir.tools_omark,f"{config.qc.omark_db}.h5"),
-        taxid = config.qc.omark_taxid
     shell:
         """
         gaqet2 --yaml {input.config} &> {log}

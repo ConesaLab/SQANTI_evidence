@@ -139,7 +139,7 @@ rule gaqet2_setup:
         os.path.join(dir.envs, "gaqet2.yaml")
     params:
         config = os.path.join(dir.tools_gaqet2, "gaqet2_config.yaml"),
-        id = config.augustus.species,
+        id = sample,
         outdir = dir.out.qc_gaqet2,
         lineage = config.busco.lineage,
         taxid = config.qc.omark_taxid,
@@ -153,7 +153,7 @@ rule gaqet2:
     input:
         config = os.path.join(dir.out.qc_gaqet2,"gaqet2_config.yaml"),
     output:
-        os.path.join(dir.out.qc_gaqet2,f"{config.augustus.species}_GAQET.stats.tsv")
+        os.path.join(dir.out.qc_gaqet2,f"{sample}_GAQET.stats.tsv")
     threads:
         config.resources.medium.cpus
     conda:

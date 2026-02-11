@@ -134,23 +134,53 @@ rule gaqet2_setup:
     input:
         os.path.join(dir.tools_gaqet2,"gaqet2_installed.done")
     output:
-        touch(os.path.join(dir.tools_gaqet2,"gaqet2_setup.done"))
+        os.path.join(dir.out.qc_gaqet2,"gaqet2_config.yaml")
     conda:
         os.path.join(dir.envs, "gaqet2.yaml")
     params:
         config = os.path.join(dir.tools_gaqet2, "gaqet2_config.yaml"),
+        id = config.augustus.species,
+        outdir = dir.out.qc_gaqet2,
         lineage = config.busco.lineage,
+        taxid = config.qc.omark_taxid,
+        omark_db = os.path.join(dir.tools_omark,f"{config.qc.omark_db}.h5")
     log:
         os.path.join(dir.logs, "gaqet2_setup.log")
     script:
         f"{dir.scripts}/gaqet2_setup.py"
 
-    
-#rule gaqet2:
+rule gaqet2:
+    input:
+        config = os.path.join(dir.out.qc_gaqet2,"gaqet2_config.yaml"),
+    output:
+        os.path.join(dir.out.qc_gaqet2,f"{config.augustus.species}_GAQET.stats.tsv")
+    threads:
+        config.resources.medium.cpus
+    conda:
+        os.path.join(dir.envs, "gaqet2.yaml")
+    log:
+        os.path.join(dir.logs, "gaqet2.log")
+    resources:
+        slurm_extra = f"'--qos={config.resources.medium.qos}'",
+        cpus_per_task = config.resources.medium.cpus,
+        mem = config.resources.big.mem,
+        runtime =  config.resources.medium.time
+    params:
+        id = config.augustus.species,
+        busco_lineage = config.busco.lineage,
+        os.path.join(dir.tools_omark,f"{config.qc.omark_db}.h5"),
+        taxid = config.qc.omark_taxid
+    shell:
+        """
+        gaqet2 --yaml {input.config} &> {log}
+        """
+
+
+# rule gaqet2:
 #    input:
 #        touch(os.path.join(dir.tools_gaqet2,"gaqet2_installed.done")),
 #        config = os.path.join(dir.envs, "gaqet2_config.yaml"),
 #    output:
-#    
+   
 #    conda:
 #        os.path.join(dir.envs, "gaqet2.yaml")

@@ -13,7 +13,7 @@ rule split_fasta:
     conda:
         f"{dir.envs}/sqanti3.yaml"
     threads:
-        config.resources.small.get("cpus", 4)
+        config.resources.small.cpus
     log:
         os.path.join(dir.logs,"split_fasta.log")
     script:
@@ -39,7 +39,7 @@ rule ed_augusuts_per_chromosome:
     log:
         os.path.join(dir.logs,"ed_augustus_{chromosome}.log")
     threads:
-        config.resources.small.get("cpus", 4)
+        config.resources.small.cpus
     shell:
         """
         chromosome={dir.tools_reference}/{genome_name}/{wildcards.chromosome}.fasta
@@ -60,7 +60,7 @@ rule merge_ed_predictions:
         mem = config.resources.small.mem,
         runtime =  config.resources.small.time
     threads:
-        config.resources.small.get("cpus", 4)
+        config.resources.small.cpus
     shell:
         """
         for file in {input} ; do
@@ -104,7 +104,7 @@ rule ab_augustus_per_chromosome:
     log:
         os.path.join(dir.logs,"ab_augustus_{chromosome}.log")
     threads:
-        config.resources.small.get("cpus", 4)
+        config.resources.small.cpus
     shell:
         """
         chromosome={dir.tools_reference}/{genome_name}/{wildcards.chromosome}.fasta
@@ -122,7 +122,7 @@ rule merge_ab_predictions:
         mem = config.resources.small.mem,
         runtime =  config.resources.small.time
     threads:
-        config.resources.small.get("cpus", 4)
+        config.resources.small.cpus
     shell:
         """
         cat {input} | grep -v "#" > {output}

@@ -18,10 +18,12 @@ def get_pbmm2_input(filetype,config,sample):
         return os.path.join(dir.out.isoseq,f"{sample}.fastq")
 
 def get_chromosomes(file):
-    import subprocess
-    result = subprocess.run(["grep", ">", file], capture_output=True, text=True)
-    output_list = [line.split(' ')[0].replace('>', '') for line in result.stdout.strip().split('\n')]
-    return output_list
+    chromosomes = []
+    with open(file, 'r') as f:
+        for line in f:
+            if line.startswith('>'):
+                chromosomes.append(line[1:].split()[0])
+    return chromosomes
 
 def get_genome_name(file):
     return  os.path.splitext(os.path.basename(file))[0]

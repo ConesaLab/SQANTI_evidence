@@ -136,7 +136,7 @@ rule gff2genbank:
         genome = config.required.genome,
         gff = os.path.join(dir.out.ab_augustus_model,"busco_genes.filtered.gff")
     output:
-        gen_bank = os.path.join(dir.out.ab_augustus_model,"busco_genes.gb")
+        gen_bank = temp(os.path.join(dir.out.ab_augustus_model,"busco_genes.gb"))
     conda:
         os.path.join(dir.envs,"busco.yaml")
     params:

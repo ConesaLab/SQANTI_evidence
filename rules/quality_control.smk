@@ -57,7 +57,7 @@ rule omark:
     conda:
         os.path.join(dir.envs, "omark.yaml")
     threads:
-        config.resources.small.get("cpus", 4)
+        config.resources.small.cpus
     shell:
         """
         omark -f {input.omamer} -d {input.omark_db} -o $(dirname {output}) &> {log}
@@ -81,7 +81,7 @@ rule busco_qc:
     conda:
         os.path.join(dir.envs, "busco.yaml")
     threads:
-        config.resources.busco.get("cpus", 4)
+        config.resources.busco.cpus
     shell:
         """
         busco -i {input.proteome} -o {output} -l {params.lineage} \
@@ -103,7 +103,7 @@ rule agat_cleaning:
     conda:
         os.path.join(dir.envs, "agat.yaml")
     threads:
-        config.resources.small.get("cpus", 4)
+        config.resources.small.cpus
     shell:
         """
         agat_convert_sp_gxf2gxf.pl -g {input} -o {output} &> {log}
@@ -124,7 +124,7 @@ rule agat_stats:
     conda:
         os.path.join(dir.envs, "agat.yaml")
     threads:
-        config.resources.small.get("cpus", 4)
+        config.resources.small.cpus
     shell:
         """
         agat_sp_statistics.pl --gff {input} -o {output} &> {log}

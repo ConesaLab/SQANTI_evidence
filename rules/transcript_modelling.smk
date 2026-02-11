@@ -8,7 +8,7 @@ if filetype == ".bam":
         conda:
             f"{dir.envs}/minimap2.yaml"
         threads:
-            config.resources.small.get("cpus", 4)
+            config.resources.small.cpus
         resources:
             slurm_extra = f"'--qos={config.resources.small.qos}'",
             cpus_per_task = config.resources.small.cpus,
@@ -27,7 +27,7 @@ rule index_genome:
     conda:
         f"{dir.envs}/isoseq.yaml"
     threads:
-        config.resources.medium.get("cpus", 4)
+        config.resources.medium.cpus
     resources:
         slurm_extra = f"'--qos={config.resources.medium.qos}'",
         cpus_per_task = config.resources.medium.cpus,
@@ -48,7 +48,7 @@ rule mapping_reads_pbmm2:
     conda:
         f"{dir.envs}/isoseq.yaml"
     threads:
-        config.resources.big.get("cpus", 4)
+        config.resources.big.cpus
     resources:
         slurm_extra = f"'--qos={config.resources.big.qos}'",
         cpus_per_task = config.resources.big.cpus,
@@ -73,7 +73,7 @@ rule collapse_isoforms:
     log:
         os.path.join(dir.logs,"isoseq_collapse.log")
     threads:
-        config.resources.small.get("cpus", 4)
+        config.resources.small.cpus
     resources:
         slurm_extra = f"'--qos={config.resources.small.qos}'",
         cpus_per_task = config.resources.small.cpus,

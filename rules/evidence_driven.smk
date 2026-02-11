@@ -8,7 +8,7 @@ rule run_sqanti:
         classification = os.path.join(dir.out.ed_sqanti,"IsoSeq_classification.txt"),
         gtf = os.path.join(dir.out.ed_sqanti,"IsoSeq_corrected.cds.gtf")
     threads:
-        config.resources.medium.get("cpus", 4)
+        config.resources.medium.cpus
     conda:
         f"{dir.envs}/sqanti3.yaml"
     log:
@@ -37,7 +37,7 @@ rule filter_isoforms:
     log:
         os.path.join(dir.logs,"filter_sqanti.log")
     threads:
-        config.resources.small.get("cpus", 4)
+        config.resources.small.cpus
     params:
         json_rules = config.sqanti.json_rules 
     resources:

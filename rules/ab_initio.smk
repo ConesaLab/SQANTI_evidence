@@ -155,7 +155,7 @@ rule gff2genbank:
 
 rule generate_subsets:
     input:
-        gen_bank_in = os.path.join(dir.out.ab_augustus_model,"busco_genes.gb")
+        gen_bank_in = temp(os.path.join(dir.out.ab_augustus_model,"busco_genes.gb"))
     output:
         gen_bank_out = os.path.join(dir.out.ab_augustus_model,"busco_genes.subset.gb")
     params:

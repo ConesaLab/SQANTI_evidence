@@ -1,3 +1,4 @@
+localrules: gaqet2_setup
 
 rule generate_proteome:
     input:
@@ -132,13 +133,14 @@ rule agat_stats:
 
 rule gaqet2_setup:
     input:
-        os.path.join(dir.tools_gaqet2,"gaqet2_installed.done")
+        genome = config.required.genome,
+        annotation = os.path.join(dir.out.ed_augustus,"Augustus_prediction.gff"),
     output:
         os.path.join(dir.out.qc_gaqet2,"gaqet2_config.yaml")
     conda:
         os.path.join(dir.envs, "gaqet2.yaml")
     params:
-        config = os.path.join(dir.tools_gaqet2, "gaqet2_config.yaml"),
+        config = os.path.join(dir.envs, "gaqet2_conf.yaml"),
         id = sample,
         outdir = dir.out.qc_gaqet2,
         lineage = config.busco.lineage,

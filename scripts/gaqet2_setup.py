@@ -9,7 +9,7 @@ def main():
     base_config["Assembly"] = snakemake.input.genome
     base_config["Annotation"] = snakemake.input.annotation
     base_config["Basedir"] = snakemake.params.outdir
-    base_config["Threads"] = snakemake.threads
+    base_config["Threads"] = snakemake.params.threads
     base_config["Analysis"] = ["AGAT", "BUSCO", "OMARK"]
     base_config["OMARK_db"] = snakemake.params.omark_db
     base_config["OMARK_taxid"] = snakemake.params.taxid

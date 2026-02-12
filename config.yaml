@@ -11,6 +11,7 @@ augustus:
   mode: split
 qc:
   omark_db: Metazoa
+  omark_taxid: 10090
 ab_initio:
   busco_downloads: "busco_downloads"
   lineage: "eutheria_odb10"

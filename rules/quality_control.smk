@@ -143,9 +143,10 @@ rule gaqet2_setup:
         config = os.path.join(dir.envs, "gaqet2_conf.yaml"),
         id = sample,
         outdir = dir.out.qc_gaqet2,
-        lineage = config.busco.lineage,
+        busco_lineage = config.ab_initio.lineage,
         taxid = config.qc.omark_taxid,
-        omark_db = os.path.join(dir.tools_omark,f"{config.qc.omark_db}.h5")
+        omark_db = os.path.join(dir.tools_omark,f"{config.qc.omark_db}.h5"),
+        threads = config.resources.medium.cpus
     log:
         os.path.join(dir.logs, "gaqet2_setup.log")
     script:
@@ -169,7 +170,7 @@ rule gaqet2:
         runtime =  config.resources.medium.time
     shell:
         """
-        gaqet2 --yaml {input.config} &> {log}
+        GAQET --yaml {input.config} &> {log}
         """
 
 

@@ -1,5 +1,6 @@
 name: gaqet2
 channels:
   - victorgcb
-packages:
+  - bioconda
+dependencies:
   - gaqet

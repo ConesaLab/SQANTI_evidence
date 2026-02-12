@@ -47,7 +47,4 @@ rule all:
     input:
         os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff"),
         os.path.join(dir.out.base,"cleanup.done"),
-        # os.path.join(dir.out.qc_omark,"Final.pdf"),
-        # os.path.join(dir.out.qc_busco),
-        # os.path.join(dir.out.qc_agat,"Final_stats.txt"),
-        os.path.join(dir.out.qc_gaqet2,f"{sample}_GAQET.stats.tsv")
+        os.path.join(dir.out.qc_gaqet2,f"{sample}_GAQET.plot.png")

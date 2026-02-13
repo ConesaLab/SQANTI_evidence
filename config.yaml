@@ -3,6 +3,7 @@ required:
   input: ""
   outdir: "results"
   toolsdir: "/home/pabloati/Programs/lr_annotation"
+  log_level: "INFO"  # Logging level: DEBUG, INFO, WARNING, ERROR
 augustus:
   prediction: "ab_initio" # Options: "ab_initio" or "evidence_driven"
   reference_gtf: "data/mm39.ncbiRefSeq.gtf"

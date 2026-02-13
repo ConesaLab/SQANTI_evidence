@@ -1,5 +1,25 @@
 localrules: gaqet2_setup
 
+rule agat_cleaning:
+    input:
+        os.path.join(dir.out.ed_augustus,"Augustus_prediction.gff")
+    output:
+        os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff")
+    resources:
+        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        cpus_per_task = config.resources.small.cpus,
+        mem = config.resources.medium.mem,
+        runtime =  config.resources.small.time
+    log:
+        os.path.join(dir.logs, "agat_cleaning.log")
+    conda:
+        os.path.join(dir.envs, "gaqet2.yaml")
+    threads:
+        config.resources.small.cpus
+    shell:
+        """
+        agat_convert_sp_gxf2gxf.pl -g {input} -o {output} &> {log}
+        """
 rule gaqet2_setup:
     input:
         genome = config.required.genome,

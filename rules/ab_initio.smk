@@ -3,21 +3,6 @@ import os
 
 # Setup local rules (do not require much resources)
 localrules: new_species, identify_bad_genes, extract_stop_codon_freq
-#TODO: move to a module
-def calculate_gene_number(file_path):
-    count = 0
-    try:
-        with open(file_path, 'r') as file:
-            for line in file:
-                count += line.upper().count("LOCUS")
-        return count
-    except FileNotFoundError:
-        print(f"Error: The file '{file_path}' was not found.")
-        return None
-    except IOError:
-        print(f"Error: Unable to read the file '{file_path}'.")
-        return None
-
 
 rule busco_run:
     input:

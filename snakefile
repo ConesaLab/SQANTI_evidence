@@ -17,7 +17,9 @@ genome_name = get_genome_name(str(config.required.genome))
 # Snakemake hooks for logging
 onstart:
     global pipeline_logger
-    log_level = config.required.get('log_level', 'INFO')
+    log_level = config.required.log_level 
+    if log_level is None:
+        log_level = "INFO"
     pipeline_logger = setup_pipeline_logger(log_level=log_level, log_dir=dir.logs)
     
     # Compress old logs

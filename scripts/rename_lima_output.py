@@ -1,4 +1,17 @@
 import os,sys
+import logging
+
+# Use the pipeline logger if available, otherwise create a basic one
+logger = logging.getLogger('pipeline')
+if not logger.handlers:
+    # Fallback for standalone execution
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter(
+        '%(asctime)s [%(levelname)s] %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    ))
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
 
 def main():
     dir=os.path.dirname(snakemake.input[0])
@@ -23,14 +36,14 @@ def main():
                     pass
                 for file in os.listdir(directory):
                     new_name = file.replace(f"fl.{brk}", f"{sample_name}.fl")
-                    print(f"Renaming {file} to {new_name}")
-                    print(f"FULL PATH: {os.path.join(directory, file)}, to {os.path.join(path,new_name)}")
+                    logger.info(f"Renaming {file} to {new_name}")
+                    logger.debug(f"FULL PATH: {os.path.join(directory, file)}, to {os.path.join(path,new_name)}")
                     os.rename(os.path.join(directory, file), 
                             os.path.join(path,new_name))
                 os.rmdir(directory)
             except KeyError:
                 if brk not in list(brk_2_samples.values()):
-                    print(f"Sample {brk} not found in samples file")
+                    logger.error(f"Sample {brk} not found in samples file")
                     sys.exit(1)
             
                 

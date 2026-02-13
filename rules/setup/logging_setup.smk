@@ -40,15 +40,11 @@ def setup_pipeline_logger(log_level="INFO", log_dir="logs"):
         datefmt='%Y-%m-%d %H:%M:%S'
     )
     
-    simple_formatter = logging.Formatter(
-        '[%(levelname)s] %(message)s'
-    )
-    
-    # Console handler
+    # Console handler (now with timestamps)
     if LOG_CONSOLE:
         console_handler = logging.StreamHandler()
         console_handler.setLevel(getattr(logging, log_level.upper()))
-        console_handler.setFormatter(simple_formatter)
+        console_handler.setFormatter(detailed_formatter)
         logger.addHandler(console_handler)
     
     # File handler

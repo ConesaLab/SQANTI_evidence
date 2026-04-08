@@ -41,7 +41,8 @@ def check_inputs(config):
         warn(f"Output directory {config['required']['outdir']} already exists and may be overwritten.")
     
     if not os.path.exists(config["augustus"].get("reference_gtf", "")):
-        warn("Reference GTF file for the organism not found.\nRunning ab initio prediction first for SQANTI3")
+        warn("Reference GTF file for the organism not found.")
+        warn("Running ab initio prediction first for SQANTI3")
         config["augustus"]["prediction"] = "ab_initio"
     else:
         logger.info(f"Validated reference GTF: {config['augustus']['reference_gtf']}")

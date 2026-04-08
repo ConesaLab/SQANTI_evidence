@@ -1,3 +1,5 @@
+sp_name=config.augustus.species_name
+
 rule run_sqanti:
     input:
         isoforms = os.path.join(dir.out.isoseq_collapsed,f"{sample}.collapsed.gff"),
@@ -5,8 +7,8 @@ rule run_sqanti:
         ref_genome = config.required.genome,
         sqanti = os.path.join(dir.tools_sqanti,"sqanti_installed.done")
     output:
-        classification = os.path.join(dir.out.ed_sqanti,"IsoSeq_classification.txt"),
-        gtf = os.path.join(dir.out.ed_sqanti,"IsoSeq_corrected.cds.gtf")
+        classification = os.path.join(dir.out.ed_sqanti,"{name}_classification.txt"),
+        gtf = os.path.join(dir.out.ed_sqanti,"{name}_corrected.cds.gtf")
     threads:
         config.resources.medium.cpus
     conda:
@@ -19,19 +21,20 @@ rule run_sqanti:
         mem = config.resources.big.mem,
         runtime =  config.resources.medium.time
     shell:
+        #TODO: Eliminate this for the final release, as it is only used in Garnatxa
         """
         export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
         python {dir.tools_sqanti}/sqanti3_qc.py --isoforms {input.isoforms} --refGTF {input.ref_gff} --refFasta {input.ref_genome} \
-            --dir {dir.out.ed_sqanti} --output IsoSeq -t {threads} &> {log}
-        mv {dir.out.ed_sqanti}/IsoSeq_corrected.cds.gff3 {output.gtf}
+            --dir {dir.out.ed_sqanti} --output {name} -t {threads} --includeORF &> {log}
+        mv {dir.out.ed_sqanti}/{name}_corrected.cds.gff3 {output.gtf}
         """
 
 rule filter_isoforms:
     input:
-        classification = os.path.join(dir.out.ed_sqanti,"IsoSeq_classification.txt"),
-        gtf = os.path.join(dir.out.ed_sqanti,"IsoSeq_corrected.cds.gtf")
+        classification = os.path.join(dir.out.ed_sqanti,"{name}_classification.txt"),
+        gtf = os.path.join(dir.out.ed_sqanti,"{name}_corrected.cds.gtf")
     output:
-        gtf = os.path.join(dir.out.ed_sqanti,"IsoSeq.filtered.gtf")
+        gtf = os.path.join(dir.out.ed_sqanti,"{name}_filtered.gtf")
     conda:
         os.path.join(dir.envs,"sqanti3.yaml")
     log:
@@ -50,14 +53,14 @@ rule filter_isoforms:
         export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
         python {dir.tools_sqanti}/sqanti3_filter.py rules --sqanti_class {input.classification} --filter_gtf {input.gtf} \
             -j {params.json_rules} --dir {dir.out.ed_sqanti} \
-            --output IsoSeq &> {log}
+            --output {name} &> {log}
         """
 
 rule extract_hints:
     input:
-        os.path.join(dir.out.ed_sqanti,"IsoSeq.filtered.gtf")
+        os.path.join(dir.out.ed_sqanti,"{name}_filtered.gtf")
     output:
-        os.path.join(dir.out.ed_hints,"IsoSeq.hints.gff")
+        os.path.join(dir.out.ed_hints,"{name}.hints.gff")
     conda:
         os.path.join(dir.envs,"busco.yaml")
     params:
@@ -96,7 +99,7 @@ else:
         input:
             genome = config.required.genome,
             mod = os.path.join(dir.out.ab_augustus_training,"SC_freq_mod.done"),
-            gff = os.path.join(dir.out.ed_hints,"IsoSeq.hints.gff")
+            gff = os.path.join(dir.out.ed_hints,"{name}.hints.gff")
         output:
             os.path.join(dir.out.ed_augustus,"Augustus_prediction.gff")
         conda:

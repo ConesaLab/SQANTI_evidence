@@ -23,7 +23,7 @@ rule ed_augusuts_per_chromosome:
     input:
         os.path.join(dir.tools_reference,genome_name,f"{genome_name}_split.done"),
         mod = os.path.join(dir.out.ab_augustus_training,"SC_freq_mod.done"),
-        gff = os.path.join(dir.out.ed_hints,"IsoSeq.hints.gff")
+        gff = os.path.join(dir.out.ed_hints,f"{sp_name}.hints.gff")
     output:
         os.path.join(dir.out.ed_augustus,"split","{chromosome}.prediction.gff")
     conda:

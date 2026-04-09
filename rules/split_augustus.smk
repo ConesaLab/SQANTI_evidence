@@ -1,4 +1,5 @@
 chromosomes=get_chromosomes(config.required.genome)
+sp_name = config.general.sample_name
 
 rule split_fasta:
     input:

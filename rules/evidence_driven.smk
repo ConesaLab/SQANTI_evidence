@@ -60,10 +60,10 @@ rule filter_isoforms:
         """
 
 rule extract_hints:
-    input:f"{sp_name}_filtered.gtf")
+    input:
+        os.path.join(dir.out.ed_sqanti, f"{sp_name}_filtered.gtf")
     output:
-        os.path.join(dir.out.ed_hints,f
-        os.path.join(dir.out.ed_hints,"{sp_name}.hints.gff")
+        os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff")
     conda:
         os.path.join(dir.envs,"busco.yaml")
     params:

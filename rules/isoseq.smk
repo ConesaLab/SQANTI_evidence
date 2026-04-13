@@ -21,7 +21,7 @@ rule lima:
     input:
         lambda wildcards: files[samples.index(wildcards.sample)]
     output:
-        os.path.join(dir.out.isoseq_lima,"{sample}","fl.lima.bam")
+        temp(os.path.join(dir.out.isoseq_lima,"{sample}","fl.lima.bam"))
     conda:
         f"{dir.envs}/isoseq.yaml"
     params:
@@ -48,7 +48,7 @@ rule refine:
     input:
         lima = os.path.join(dir.out.isoseq_lima,"{sample}","fl.lima.bam")
     output:
-        os.path.join(dir.out.isoseq_refine,"{sample}","{sample}.flnc.bam")
+        temp(os.path.join(dir.out.isoseq_refine,"{sample}","{sample}.flnc.bam"))
     conda:
         f"{dir.envs}/isoseq.yaml"
     log:

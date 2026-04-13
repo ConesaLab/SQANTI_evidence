@@ -67,7 +67,8 @@ rule collapse_isoforms:
         mapped = os.path.join(dir.out.isoseq_mapping,f"{sample}.mapping_pbmm2.bam"),
         #flnc = os.path.join(config.required.flnc_dir,"{sample}","{sample}.flnc.bam")
     output:
-        os.path.join(dir.out.isoseq_collapsed,f"{sample}.collapsed.gff"),
+        gff = os.path.join(dir.out.isoseq_collapsed,f"{sample}.collapsed.gff"),
+        fastq = temp(os.path.join(dir.out.isoseq_collapsed,f"{sample}.collapsed.fastq"))
     conda:
         f"{dir.envs}/isoseq.yaml"
     log:
@@ -81,5 +82,5 @@ rule collapse_isoforms:
         runtime =  config.resources.small.time
     shell:
         """
-        isoseq collapse --do-not-collapse-extra-5exons {input.mapped} {output} -j {threads} &> {log}
+        isoseq collapse --do-not-collapse-extra-5exons {input.mapped} {output.gff} -j {threads} &> {log}
         """

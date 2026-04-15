@@ -2,7 +2,7 @@ localrules: gaqet2_setup
 
 rule agat_cleaning:
     input:
-        os.path.join(dir.out.ed_augustus,"Augustus_prediction.gff")
+        os.path.join(dir.out.ed_augustus,"Augustus_prediction.filtered.gff")
     output:
         protected(os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff"))
     resources:
@@ -22,7 +22,7 @@ rule agat_cleaning:
 rule gaqet2_setup:
     input:
         genome = config.required.genome,
-        annotation = os.path.join(dir.out.ed_augustus,"Augustus_prediction.gff"),
+        annotation = os.path.join(dir.out.ed_augustus,"Augustus_prediction.filtered.gff"),
     output:
         os.path.join(dir.out.qc_gaqet2,"gaqet2_config.yaml")
     conda:

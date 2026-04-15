@@ -11,12 +11,11 @@ def main():
     from genome_anno import Anno
     from evidence import Evidence
 
-    args = parseCmd()
-
-    gtf_file = args.gtf
-    hintfiles = args.hintfiles.split(',') if args.hintfiles else []
-    out = args.out
-    quiet = args.quiet
+    gtf_file = snakemake.input.gff
+    hint_input = snakemake.input.hints
+    hintfiles = hint_input if isinstance(hint_input, list) else [hint_input]
+    out = snakemake.output.gff
+    quiet = False
 
     if not quiet:
         sys.stderr.write(f'### LEYENDO PREDICCIÓN DE GENES: [{gtf_file}]\n')
@@ -83,18 +82,6 @@ def main():
     if not quiet:
         sys.stderr.write('### FINALIZADO\n\n')
         sys.stderr.write(f'### La predicción filtrada se encuentra en {out}.\n')
-
-def parseCmd():
-    parser = argparse.ArgumentParser(description='Filtra genes monoexónicos que no están respaldados por hints.')
-    parser.add_argument('-g', '--gtf', type=str, required=True,
-        help='Archivo de predicción de genes en formato GTF (solo uno).')
-    parser.add_argument('-e', '--hintfiles', type=str, required=True,
-        help='Lista separada por comas de archivos con evidencias en GFF.')
-    parser.add_argument('-o', '--out', type=str, required=True,
-        help='Archivo de salida para la predicción filtrada en GTF.')
-    parser.add_argument('-q', '--quiet', action='store_true',
-        help='Modo silencioso (no imprime logs en stderr).')
-    return parser.parse_args()
 
 if __name__ == '__main__':
     main()

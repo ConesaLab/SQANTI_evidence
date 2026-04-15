@@ -106,7 +106,8 @@ else:
 
 rule filter_monoexons:
     input:
-        gff = os.path.join(dir.out.ed_augustus,"Augustus_prediction.gff")
+        gff = os.path.join(dir.out.ed_augustus,"Augustus_prediction.gff"),
+        hints = os.path.join(dir.out.ed_hints,f"{sp_name}.hints.gff")
     output:
         gff = os.path.join(dir.out.ed_augustus,"Augustus_prediction.filtered.gff")
     conda:

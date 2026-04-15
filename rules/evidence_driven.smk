@@ -19,10 +19,9 @@ rule run_sqanti:
     log:
         os.path.join(dir.logs,"run_sqanti.log")
     resources:
-        slurm_extra = f"'--qos={config.resources.medium.qos}'",
-        cpus_per_task = config.resources.busco.cpus,
-        mem = config.resources.big.mem,
-        runtime =  config.resources.medium.time
+        slurm_extra = f"\'--qos={config.resources.medium.qos}}\'",
+        mem_mb = config.resources.big.mem_mb,
+        time_min = config.resources.medium.time_min
     shell:
         #TODO: Eliminate this for the final release, as it is only used in Garnatxa
         """
@@ -48,10 +47,9 @@ rule filter_isoforms:
         json_rules = config.sqanti.json_rules,
         sp_name = sp_name
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        mem_mb = config.resources.small.mem_mb,
+        time_min = config.resources.small.time_min
     shell:
         """
         export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
@@ -71,10 +69,9 @@ rule extract_hints:
         utr = config.augustus.utr
         #TODO: Perhaps add techonolgy and priority options
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        mem_mb = config.resources.small.mem_mb,
+        time_min = config.resources.small.time_min
     shell:
         """
         tmp_dir=$(dirname {output})/tmp
@@ -114,10 +111,9 @@ else:
         log:
             os.path.join(dir.logs,"run_augustus_ed.log")
         resources:
-            slurm_extra = f"'--qos={config.resources.big.qos}'",
-            cpus_per_task = config.resources.big.cpus,
-            mem = config.resources.big.mem,
-            runtime =  config.resources.big.time
+            slurm_extra = f"\'--qos={config.resources.big.qos}}\'",
+        mem_mb = config.resources.big.mem_mb,
+            time_min = config.resources.big.time_min
         shell:
             """
             augustus --species={params.name} {input.genome} --hintsfile={input.gff} \

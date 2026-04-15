@@ -33,10 +33,9 @@ rule lima:
     threads:
         config.resources.big.get("cpus", 4)
     resources:
-        slurm_extra = f"'--qos={config.resources.big.qos}'",
-        cpus_per_task = config.resources.big.cpus,
-        mem = config.resources.big.mem,
-        runtime =  config.resources.big.time
+        slurm_extra = f"\'--qos={config.resources.big.qos}}\'",
+        mem_mb = config.resources.big.mem_mb,
+        time_min = config.resources.big.time_min
     shell:
         """
         lima {input} {params.primers} {params.output} \
@@ -58,10 +57,9 @@ rule refine:
     threads:
         config.resources.small.get("cpus", 4)
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        mem_mb = config.resources.small.mem_mb,
+        time_min = config.resources.small.time_min
     shell:
         """
         isoseq refine --require-polya {input.lima} {params.primers} {output} &> {log}
@@ -91,10 +89,9 @@ rule cluster:
     threads:
         config.resources.small.get("cpus", 4)
     resources:
-        slurm_extra = f"'--qos={config.resources.medium.qos}'",
-        cpus_per_task = config.resources.medium.cpus,
-        mem = config.resources.small_bigMem.mem,
-        runtime =  config.resources.medium.time
+        slurm_extra = f"\'--qos={config.resources.medium.qos}}\'",
+        mem_mb = config.resources.small_bigMem.mem_mb,
+        time_min = config.resources.medium.time_min
     shell:
         """
         isoseq cluster2 {input} {output.bam} &> {log}

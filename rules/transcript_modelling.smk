@@ -10,10 +10,9 @@ if filetype == ".bam":
         threads:
             config.resources.small.cpus
         resources:
-            slurm_extra = f"'--qos={config.resources.small.qos}'",
-            cpus_per_task = config.resources.small.cpus,
-            mem = config.resources.small.mem,
-            runtime =  config.resources.small.time
+            slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        mem_mb = config.resources.small.mem_mb,
+            time_min = config.resources.small.time_min
         shell:
             """
             samtools fastq {input} > {output}
@@ -29,10 +28,9 @@ rule index_genome:
     threads:
         config.resources.medium.cpus
     resources:
-        slurm_extra = f"'--qos={config.resources.medium.qos}'",
-        cpus_per_task = config.resources.medium.cpus,
-        mem = config.resources.big.mem,
-        runtime =  config.resources.medium.time
+        slurm_extra = f"\'--qos={config.resources.medium.qos}}\'",
+        mem_mb = config.resources.big.mem_mb,
+        time_min = config.resources.medium.time_min
     shell:
         """
         mkdir -p {dir.tools_index}
@@ -50,10 +48,9 @@ rule mapping_reads_pbmm2:
     threads:
         config.resources.big.cpus
     resources:
-        slurm_extra = f"'--qos={config.resources.big.qos}'",
-        cpus_per_task = config.resources.big.cpus,
-        mem = config.resources.big.mem,
-        runtime =  config.resources.big.time
+        slurm_extra = f"\'--qos={config.resources.big.qos}}\'",
+        mem_mb = config.resources.big.mem_mb,
+        time_min = config.resources.big.time_min
     log:
         os.path.join(dir.logs,"isoseq_mapping.log")
     shell:
@@ -76,10 +73,9 @@ rule collapse_isoforms:
     threads:
         config.resources.small.cpus
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.medium.mem,
-        runtime =  config.resources.small.time
+        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        mem_mb = config.resources.medium.mem_mb,
+        time_min = config.resources.small.time_min
     shell:
         """
         isoseq collapse --do-not-collapse-extra-5exons {input.mapped} {output.gff} -j {threads} &> {log}

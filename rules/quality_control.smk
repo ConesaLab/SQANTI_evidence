@@ -6,10 +6,9 @@ rule agat_cleaning:
     output:
         protected(os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff"))
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.medium.mem,
-        runtime =  config.resources.small.time
+        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        mem_mb = config.resources.medium.mem_mb,
+        time_min = config.resources.small.time_min
     log:
         os.path.join(dir.logs, "agat_cleaning.log")
     conda:
@@ -53,10 +52,9 @@ rule gaqet2:
     log:
         os.path.join(dir.logs, "gaqet2.log")
     resources:
-        slurm_extra = f"'--qos={config.resources.medium.qos}'",
-        cpus_per_task = config.resources.medium.cpus,
-        mem = config.resources.big.mem,
-        runtime =  config.resources.medium.time
+        slurm_extra = f"\'--qos={config.resources.medium.qos}}\'",
+        mem_mb = config.resources.big.mem_mb,
+        time_min = config.resources.medium.time_min
     shell:
         """
         GAQET --yaml {input.config} &> {log}
@@ -68,10 +66,9 @@ rule gaqet2_plot:
     output:
         protected(os.path.join(dir.out.qc_gaqet2,f"{sample}_GAQET.plot.png"))
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        mem_mb = config.resources.small.mem_mb,
+        time_min = config.resources.small.time_min
     threads:
         config.resources.small.cpus
     conda:

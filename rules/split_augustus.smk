@@ -7,10 +7,9 @@ rule split_fasta:
     output:
         touch(os.path.join(dir.tools_reference,genome_name,f"{genome_name}_split.done"))
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        mem_mb = config.resources.small.mem_mb,
+        time_min = config.resources.small.time_min
     conda:
         f"{dir.envs}/sqanti3.yaml"
     threads:
@@ -33,10 +32,9 @@ rule ed_augusuts_per_chromosome:
         name = config.augustus.species_name,
         extcfg = f"{dir.envs}/extrinsic.M.RM.PB.cfg"
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.big.mem,
-        runtime =  config.resources.big.time
+        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        mem_mb = config.resources.big.mem_mb,
+        time_min = config.resources.big.time_min
     log:
         os.path.join(dir.logs,"ed_augustus_{chromosome}.log")
     threads:
@@ -56,10 +54,9 @@ rule merge_ed_predictions:
     output:
         temp(os.path.join(dir.out.ed_augustus,"Naive_prediction.gff"))
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        mem_mb = config.resources.small.mem_mb,
+        time_min = config.resources.small.time_min
     threads:
         config.resources.small.cpus
     shell:
@@ -77,10 +74,9 @@ rule rename_ed_augustus:
     output:
         os.path.join(dir.out.ed_augustus,"Augustus_prediction.gff")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        mem_mb = config.resources.small.mem_mb,
+        time_min = config.resources.small.time_min
     log:
         os.path.join(dir.logs, "rename_augustus.log")
     script:
@@ -98,10 +94,9 @@ rule ab_augustus_per_chromosome:
     params:
         name = config.augustus.species_name,
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.big.mem,
-        runtime =  config.resources.big.time
+        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        mem_mb = config.resources.big.mem_mb,
+        time_min = config.resources.big.time_min
     log:
         os.path.join(dir.logs,"ab_augustus_{chromosome}.log")
     threads:
@@ -118,10 +113,9 @@ rule merge_ab_predictions:
     output:
         os.path.join(dir.out.ab_augustus,"split","ab_initio_prediction.gff")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        mem_mb = config.resources.small.mem_mb,
+        time_min = config.resources.small.time_min
     threads:
         config.resources.small.cpus
     shell:
@@ -136,10 +130,9 @@ rule rename_ab_augustus:
     output:
         os.path.join(dir.out.ab_augustus,"ab_initio_prediction.gff")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        mem_mb = config.resources.small.mem_mb,
+        time_min = config.resources.small.time_min
     log:
         os.path.join(dir.logs, "rename_augustus_ab.log")
     script:

@@ -35,7 +35,8 @@ rule lima:
     resources:
         slurm_extra = f"\'--qos={config.resources.big.qos}\'",
         mem = config.resources.big.mem,
-        time = config.resources.big.time
+        cpus_per_task = config.resources.big.cpus,
+        runtime = config.resources.big.time
     shell:
         """
         lima {input} {params.primers} {params.output} \
@@ -59,7 +60,8 @@ rule refine:
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem = config.resources.small.mem,
-        time = config.resources.small.time
+        cpus_per_task = config.resources.small.cpus,
+        runtime = config.resources.small.time
     shell:
         """
         isoseq refine --require-polya {input.lima} {params.primers} {output} &> {log}
@@ -90,8 +92,9 @@ rule cluster:
         config.resources.small.get("cpus", 4)
     resources:
         slurm_extra = f"\'--qos={config.resources.medium.qos}\'",
+        cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small_bigMem.mem,
-        time = config.resources.medium.time
+        runtime = config.resources.medium.time
     shell:
         """
         isoseq cluster2 {input} {output.bam} &> {log}

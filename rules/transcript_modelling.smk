@@ -11,7 +11,7 @@ if filetype == ".bam":
             config.resources.small.cpus
         resources:
             slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem = config.resources.small.mem,
+            mem = config.resources.small.mem,
             time = config.resources.small.time
         shell:
             """

@@ -7,7 +7,7 @@ rule split_fasta:
     output:
         touch(os.path.join(dir.tools_reference,genome_name,f"{genome_name}_split.done"))
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     conda:
@@ -32,7 +32,7 @@ rule ed_augusuts_per_chromosome:
         name = config.augustus.species_name,
         extcfg = f"{dir.envs}/extrinsic.M.RM.PB.cfg"
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.big.mem_mb,
         time_min = config.resources.big.time_min
     log:
@@ -54,7 +54,7 @@ rule merge_ed_predictions:
     output:
         temp(os.path.join(dir.out.ed_augustus,"Naive_prediction.gff"))
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     threads:
@@ -74,7 +74,7 @@ rule rename_ed_augustus:
     output:
         os.path.join(dir.out.ed_augustus,"Augustus_prediction.gff")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     log:
@@ -94,7 +94,7 @@ rule ab_augustus_per_chromosome:
     params:
         name = config.augustus.species_name,
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.big.mem_mb,
         time_min = config.resources.big.time_min
     log:
@@ -113,7 +113,7 @@ rule merge_ab_predictions:
     output:
         os.path.join(dir.out.ab_augustus,"split","ab_initio_prediction.gff")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     threads:
@@ -130,7 +130,7 @@ rule rename_ab_augustus:
     output:
         os.path.join(dir.out.ab_augustus,"ab_initio_prediction.gff")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     log:

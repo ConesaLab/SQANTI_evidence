@@ -33,7 +33,7 @@ rule lima:
     threads:
         config.resources.big.get("cpus", 4)
     resources:
-        slurm_extra = f"\'--qos={config.resources.big.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.big.qos}\'",
         mem_mb = config.resources.big.mem_mb,
         time_min = config.resources.big.time_min
     shell:
@@ -57,7 +57,7 @@ rule refine:
     threads:
         config.resources.small.get("cpus", 4)
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     shell:
@@ -89,7 +89,7 @@ rule cluster:
     threads:
         config.resources.small.get("cpus", 4)
     resources:
-        slurm_extra = f"\'--qos={config.resources.medium.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.medium.qos}\'",
         mem_mb = config.resources.small_bigMem.mem_mb,
         time_min = config.resources.medium.time_min
     shell:

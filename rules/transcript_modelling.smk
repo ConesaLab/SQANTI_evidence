@@ -10,7 +10,7 @@ if filetype == ".bam":
         threads:
             config.resources.small.cpus
         resources:
-            slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+            slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
             time_min = config.resources.small.time_min
         shell:
@@ -28,7 +28,7 @@ rule index_genome:
     threads:
         config.resources.medium.cpus
     resources:
-        slurm_extra = f"\'--qos={config.resources.medium.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.medium.qos}\'",
         mem_mb = config.resources.big.mem_mb,
         time_min = config.resources.medium.time_min
     shell:
@@ -48,7 +48,7 @@ rule mapping_reads_pbmm2:
     threads:
         config.resources.big.cpus
     resources:
-        slurm_extra = f"\'--qos={config.resources.big.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.big.qos}\'",
         mem_mb = config.resources.big.mem_mb,
         time_min = config.resources.big.time_min
     log:
@@ -73,7 +73,7 @@ rule collapse_isoforms:
     threads:
         config.resources.small.cpus
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.medium.mem_mb,
         time_min = config.resources.small.time_min
     shell:

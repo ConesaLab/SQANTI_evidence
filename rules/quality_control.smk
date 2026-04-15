@@ -6,7 +6,7 @@ rule agat_cleaning:
     output:
         protected(os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff"))
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.medium.mem_mb,
         time_min = config.resources.small.time_min
     log:
@@ -52,7 +52,7 @@ rule gaqet2:
     log:
         os.path.join(dir.logs, "gaqet2.log")
     resources:
-        slurm_extra = f"\'--qos={config.resources.medium.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.medium.qos}\'",
         mem_mb = config.resources.big.mem_mb,
         time_min = config.resources.medium.time_min
     shell:
@@ -66,7 +66,7 @@ rule gaqet2_plot:
     output:
         protected(os.path.join(dir.out.qc_gaqet2,f"{sample}_GAQET.plot.png"))
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     threads:

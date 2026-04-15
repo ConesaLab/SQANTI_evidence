@@ -18,8 +18,8 @@ rule busco_run:
         lineage = config.ab_initio.lineage
     resources:
         slurm_extra = f"\'--qos={config.resources.busco.qos}\'",
-        mem_mb = config.resources.busco.mem_mb,
-        time_min = config.resources.busco.time_min
+        mem = config.resources.busco.mem,
+        time = config.resources.busco.time
     threads:
         config.resources.busco.cpus,
     log:
@@ -41,8 +41,8 @@ rule busco_gather:
         gene_type = "single"
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     conda:
         os.path.join(dir.envs,"busco.yaml")
     log:
@@ -61,8 +61,8 @@ rule clustering_busco_genes:
         os.path.join(dir.logs,"clustering_busco_genes.log")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     shell:
         """
         dir=$(dirname {output})
@@ -83,8 +83,8 @@ rule concatenate_gff:
         os.path.join(dir.logs,"concatenate_gff.log")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     run:
         with open(input.gene_list) as f:
             gene_names = [line.strip() for line in f if line.strip()]
@@ -106,8 +106,8 @@ rule filter_miniprot_genes:
         os.path.join(dir.logs,"filter_miniprot_genes.log")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     shell:
         """
         Rscript {dir.scripts}/filter_miniprot_genes.R {input} {output} {params.threshold} &> {log}
@@ -127,8 +127,8 @@ rule gff2genbank:
         os.path.join(dir.logs,"gff2genbank.log")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     shell:
         """
         gff2gbSmallDNA.pl {input.gff} {input.genome} {params.flanking_region} {output} &> {log}
@@ -146,8 +146,8 @@ rule generate_subsets:
         os.path.join(dir.logs,"generate_subset.log")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     script:
         os.path.join(dir.scripts,"generate_subset.py")
 
@@ -167,8 +167,8 @@ rule new_species:
         os.path.join(dir.logs,"new_species.log")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     shell:
         """
         rm -rf $AUGUSTUS_CONFIG_PATH/species/{params.name}
@@ -189,8 +189,8 @@ rule initial_etraining:
         os.path.join(dir.logs,"initial_etraining.log")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     shell:
         "etraining --species={params.name} {input.gb} &> {output}"
 
@@ -201,8 +201,8 @@ rule identify_bad_genes:
         bad = os.path.join(dir.out.ab_augustus_training,"bad.lst")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     shell:
         "grep 'in sequence' {input} | cut -f7 -d' ' | sed s/://g | sort -u > {output}"
 
@@ -216,8 +216,8 @@ rule filter_genes:
         os.path.join(dir.envs,"augustus.yaml")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     shell:
         "filterGenes.pl {input.bad_list} {input.gb} > {output}"
 
@@ -232,8 +232,8 @@ rule retrain:
         name = config.augustus.species_name
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     shell:
         "etraining --species={params.name} {input} > {output}"
 
@@ -260,8 +260,8 @@ rule modify_stop_codon_freq:
         os.path.join(dir.logs,"modify_stop_codon_freq.log")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     script:
         os.path.join(dir.scripts,"modify_SC_freq.py")
 
@@ -283,8 +283,8 @@ else:
             os.path.join(dir.logs,"run_augustus.log")
         resources:
             slurm_extra = f"\'--qos={config.resources.big.qos}\'",
-        mem_mb = config.resources.big.mem_mb,
-            time_min = config.resources.big.time_min
+        mem = config.resources.big.mem,
+            time = config.resources.big.time
         shell:
             "augustus --species={params.name} {input.genome} --protein=on --codingseq=on > {output} 2> {log}"
 
@@ -299,7 +299,7 @@ rule gff2gtf:
         os.path.join(dir.logs,"gff2gtf.log")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     shell:
         "gffread {input} -T -o {output} &> {log}"

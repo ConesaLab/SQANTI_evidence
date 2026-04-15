@@ -11,8 +11,8 @@ if filetype == ".bam":
             config.resources.small.cpus
         resources:
             slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-            time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+            time = config.resources.small.time
         shell:
             """
             samtools fastq {input} > {output}
@@ -29,8 +29,8 @@ rule index_genome:
         config.resources.medium.cpus
     resources:
         slurm_extra = f"\'--qos={config.resources.medium.qos}\'",
-        mem_mb = config.resources.big.mem_mb,
-        time_min = config.resources.medium.time_min
+        mem = config.resources.big.mem,
+        time = config.resources.medium.time
     shell:
         """
         mkdir -p {dir.tools_index}
@@ -49,8 +49,8 @@ rule mapping_reads_pbmm2:
         config.resources.big.cpus
     resources:
         slurm_extra = f"\'--qos={config.resources.big.qos}\'",
-        mem_mb = config.resources.big.mem_mb,
-        time_min = config.resources.big.time_min
+        mem = config.resources.big.mem,
+        time = config.resources.big.time
     log:
         os.path.join(dir.logs,"isoseq_mapping.log")
     shell:
@@ -74,8 +74,8 @@ rule collapse_isoforms:
         config.resources.small.cpus
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.medium.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.medium.mem,
+        time = config.resources.small.time
     shell:
         """
         isoseq collapse --do-not-collapse-extra-5exons {input.mapped} {output.gff} -j {threads} &> {log}

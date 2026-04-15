@@ -20,8 +20,8 @@ rule run_sqanti:
         os.path.join(dir.logs,"run_sqanti.log")
     resources:
         slurm_extra = f"\'--qos={config.resources.medium.qos}\'",
-        mem_mb = config.resources.big.mem_mb,
-        time_min = config.resources.medium.time_min
+        mem = config.resources.big.mem,
+        time = config.resources.medium.time
     shell:
         #TODO: Eliminate this for the final release, as it is only used in Garnatxa
         """
@@ -48,8 +48,8 @@ rule filter_isoforms:
         sp_name = sp_name
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     shell:
         """
         export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
@@ -71,8 +71,8 @@ rule extract_hints:
         #TODO: Perhaps add techonolgy and priority options
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     script:
         os.path.join(dir.scripts,"generate_hints.py")
 
@@ -96,8 +96,8 @@ else:
             os.path.join(dir.logs,"run_augustus_ed.log")
         resources:
             slurm_extra = f"\'--qos={config.resources.big.qos}\'",
-        mem_mb = config.resources.big.mem_mb,
-            time_min = config.resources.big.time_min
+        mem = config.resources.big.mem,
+            time = config.resources.big.time
         shell:
             """
             augustus --species={params.name} {input.genome} --hintsfile={input.gff} \
@@ -117,7 +117,7 @@ rule filter_monoexons:
         config.resources.small.cpus
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        mem_mb = config.resources.small.mem_mb,
-        time_min = config.resources.small.time_min
+        mem = config.resources.small.mem,
+        time = config.resources.small.time
     script:
         os.path.join(dir.scripts,"filter_monoexons.py")

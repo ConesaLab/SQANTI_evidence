@@ -96,7 +96,7 @@ else:
             os.path.join(dir.logs,"run_augustus_ed.log")
         resources:
             slurm_extra = f"\'--qos={config.resources.big.qos}\'",
-        mem = config.resources.big.mem,
+            mem_mb = config.resources.big.mem_mb,
             time = config.resources.big.time
         shell:
             """

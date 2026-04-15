@@ -283,7 +283,7 @@ else:
             os.path.join(dir.logs,"run_augustus.log")
         resources:
             slurm_extra = f"\'--qos={config.resources.big.qos}\'",
-        mem = config.resources.big.mem,
+            mem = config.resources.big.mem,
             time = config.resources.big.time
         shell:
             "augustus --species={params.name} {input.genome} --protein=on --codingseq=on > {output} 2> {log}"

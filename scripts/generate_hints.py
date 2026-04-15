@@ -5,7 +5,7 @@ def process_transcript(t_id, chrom, strand, exons, cds, out_file, cds_dict):
     if not exons:
         return
         
-    hint_attrs = f"group={t_id};source=T"
+    hint_attrs = f"group={t_id};source=PB"
     
     # Sort coordinates just in case they appear out of order in the GFF
     exons.sort()

@@ -27,7 +27,7 @@ rule run_sqanti:
         """
         export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
         python {dir.tools_sqanti}/sqanti3_qc.py --isoforms {input.isoforms} --refGTF {input.ref_gff} --refFasta {input.ref_genome} \
-            --dir {dir.out.ed_sqanti} --output {params.sp_name} -t {threads} --includeORF &> {log}
+            --dir {dir.out.ed_sqanti} --output {params.sp_name} -t {threads} --include_ORF &> {log}
         mv {dir.out.ed_sqanti}/{params.sp_name}_corrected.cds.gff3 {output.gtf}
         """
 
@@ -36,7 +36,7 @@ rule filter_isoforms:
         classification = os.path.join(dir.out.ed_sqanti,f"{sp_name}_classification.txt"),
         gtf = os.path.join(dir.out.ed_sqanti,f"{sp_name}_corrected.cds.gtf")
     output:
-        gtf = os.path.join(dir.out.ed_sqanti,f"{sp_name}_filtered.gtf")
+        gtf = os.path.join(dir.out.ed_sqanti,f"{sp_name}.filtered.gtf")
     conda:
         os.path.join(dir.envs,"sqanti3.yaml")
     log:
@@ -61,7 +61,7 @@ rule filter_isoforms:
 
 rule extract_hints:
     input:
-        os.path.join(dir.out.ed_sqanti, f"{sp_name}_filtered.gtf")
+        os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf")
     output:
         os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff")
     conda:

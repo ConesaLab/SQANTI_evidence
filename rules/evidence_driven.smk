@@ -19,7 +19,7 @@ rule run_sqanti:
     log:
         os.path.join(dir.logs,"run_sqanti.log")
     resources:
-        slurm_extra = f"\'--qos={config.resources.medium.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.medium.qos}\'",
         mem_mb = config.resources.big.mem_mb,
         time_min = config.resources.medium.time_min
     shell:
@@ -47,7 +47,7 @@ rule filter_isoforms:
         json_rules = config.sqanti.json_rules,
         sp_name = sp_name
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     shell:
@@ -60,7 +60,8 @@ rule filter_isoforms:
 
 rule extract_hints:
     input:
-        os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf")
+        gtf = os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
+        classification = os.path.join(dir.out.ed_sqanti,f"{sp_name}_classification.txt")
     output:
         os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff")
     conda:
@@ -69,28 +70,11 @@ rule extract_hints:
         utr = config.augustus.utr
         #TODO: Perhaps add techonolgy and priority options
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
-    shell:
-        """
-        tmp_dir=$(dirname {output})/tmp
-        mkdir -p $tmp_dir
-        if [ {params.utr} == "True" ]; then
-            grep -P "\t(CDS|exon)\t" {input} | gtf2gff.pl --printIntron --out=$tmp_dir/tmp.gff
-            grep -P "\t(CDS|intron|exon)\t" $tmp_dir/tmp.gff > $tmp_dir/tmp2.gff
-
-        else
-            grep -P "\t(CDS)\t" {input} | gtf2gff.pl --printIntron --out=$tmp_dir/tmp.gff
-            grep -P "\t(CDS|intron)\t" $tmp_dir/tmp.gff > $tmp_dir/tmp2.gff
-        fi
-        # Remove gene_id and change transcript id for grp_id
-        sed -i 's/gene_id[^;]*;//g' $tmp_dir/tmp2.gff
-        sed -i 's/transcript_id \\"/grp=/g' $tmp_dir/tmp2.gff
-        # Add the source
-        cat $tmp_dir/tmp2.gff | sed "s/\\";/;pri=1;src=PB/g" > {output}
-        rm -r $tmp_dir
-        """
+    script:
+        os.path.join(dir.scripts,"generate_hints.py")
 
 if config.augustus.mode == "split":
     include: "split_augustus.smk"
@@ -111,7 +95,7 @@ else:
         log:
             os.path.join(dir.logs,"run_augustus_ed.log")
         resources:
-            slurm_extra = f"\'--qos={config.resources.big.qos}}\'",
+            slurm_extra = f"\'--qos={config.resources.big.qos}\'",
         mem_mb = config.resources.big.mem_mb,
             time_min = config.resources.big.time_min
         shell:
@@ -119,3 +103,21 @@ else:
             augustus --species={params.name} {input.genome} --hintsfile={input.gff} \
             --extrinsicCfgFile={params.extcfg} --protein=on --codingseq=on > {output} 2> {log}
             """
+
+rule filter_monoexons:
+    input:
+        gff = os.path.join(dir.out.ed_augustus,"Augustus_prediction.gff")
+    output:
+        gff = os.path.join(dir.out.ed_augustus,"Augustus_prediction.filtered.gff")
+    conda:
+        os.path.join(dir.envs,"busco.yaml")
+    log:
+        os.path.join(dir.logs,"filter_monoexons.log")
+    threads:
+        config.resources.small.cpus
+    resources:
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
+        mem_mb = config.resources.small.mem_mb,
+        time_min = config.resources.small.time_min
+    script:
+        os.path.join(dir.scripts,"filter_monoexons.py")

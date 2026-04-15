@@ -17,7 +17,7 @@ rule busco_run:
         busco_dir = dir.tools_busco,
         lineage = config.ab_initio.lineage
     resources:
-        slurm_extra = f"\'--qos={config.resources.busco.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.busco.qos}\'",
         mem_mb = config.resources.busco.mem_mb,
         time_min = config.resources.busco.time_min
     threads:
@@ -40,7 +40,7 @@ rule busco_gather:
         lineage = config.ab_initio.lineage,
         gene_type = "single"
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     conda:
@@ -60,7 +60,7 @@ rule clustering_busco_genes:
     log:
         os.path.join(dir.logs,"clustering_busco_genes.log")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     shell:
@@ -82,7 +82,7 @@ rule concatenate_gff:
     log:
         os.path.join(dir.logs,"concatenate_gff.log")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     run:
@@ -105,7 +105,7 @@ rule filter_miniprot_genes:
     log:
         os.path.join(dir.logs,"filter_miniprot_genes.log")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     shell:
@@ -126,7 +126,7 @@ rule gff2genbank:
     log:
         os.path.join(dir.logs,"gff2genbank.log")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     shell:
@@ -145,7 +145,7 @@ rule generate_subsets:
     log:
         os.path.join(dir.logs,"generate_subset.log")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     script:
@@ -166,7 +166,7 @@ rule new_species:
     log:
         os.path.join(dir.logs,"new_species.log")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     shell:
@@ -188,7 +188,7 @@ rule initial_etraining:
     log:
         os.path.join(dir.logs,"initial_etraining.log")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     shell:
@@ -200,7 +200,7 @@ rule identify_bad_genes:
     output:
         bad = os.path.join(dir.out.ab_augustus_training,"bad.lst")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     shell:
@@ -215,7 +215,7 @@ rule filter_genes:
     conda:
         os.path.join(dir.envs,"augustus.yaml")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     shell:
@@ -231,7 +231,7 @@ rule retrain:
     params:
         name = config.augustus.species_name
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     shell:
@@ -259,7 +259,7 @@ rule modify_stop_codon_freq:
     log:
         os.path.join(dir.logs,"modify_stop_codon_freq.log")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     script:
@@ -282,7 +282,7 @@ else:
         log:
             os.path.join(dir.logs,"run_augustus.log")
         resources:
-            slurm_extra = f"\'--qos={config.resources.big.qos}}\'",
+            slurm_extra = f"\'--qos={config.resources.big.qos}\'",
         mem_mb = config.resources.big.mem_mb,
             time_min = config.resources.big.time_min
         shell:
@@ -298,7 +298,7 @@ rule gff2gtf:
     log:
         os.path.join(dir.logs,"gff2gtf.log")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}}\'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem_mb = config.resources.small.mem_mb,
         time_min = config.resources.small.time_min
     shell:

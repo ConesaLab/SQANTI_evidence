@@ -35,7 +35,7 @@ rule ed_augusuts_per_chromosome:
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.medium.mem,
+        mem = config.resources.small.mem,
         runtime = config.resources.big.time
     log:
         os.path.join(dir.logs,"ed_augustus_{chromosome}.log")
@@ -100,7 +100,7 @@ rule ab_augustus_per_chromosome:
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.big.mem,
+        mem = config.resources.small.mem,
         runtime = config.resources.big.time
     log:
         os.path.join(dir.logs,"ab_augustus_{chromosome}.log")

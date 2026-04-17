@@ -100,7 +100,7 @@ else:
         resources:
             slurm_extra = f"\'--qos={config.resources.big.qos}\'",
             cpus_per_task = config.resources.big.cpus,
-            mem_mb = config.resources.big.mem_mb,
+            mem = config.resources.big.mem,
             runtime = config.resources.big.time
         shell:
             """

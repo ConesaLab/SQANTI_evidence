@@ -8,9 +8,9 @@ rule busco_run:
     input:
         genome = config.required.genome
     output:
-        directory(dir.out.ab_busco),
-        temp(os.path.join(dir.out.ab_busco,f"run_{config.ab_initio.lineage}","miniprot_output","ref.mpi")),
-        temp(os.path.join(dir.out.ab_busco,"logs",f"miniprot_align_{config.ab_initio.lineage}_out.log"))
+        dir = directory(dir.out.ab_busco),
+        tmp1 = temp(os.path.join(dir.out.ab_busco,f"run_{config.ab_initio.lineage}","miniprot_output","ref.mpi")),
+        tmp2 = temp(os.path.join(dir.out.ab_busco,"logs",f"miniprot_align_{config.ab_initio.lineage}_out.log"))
     conda:
         f"{dir.envs}/busco.yaml"  
     params:
@@ -27,9 +27,9 @@ rule busco_run:
         os.path.join(dir.logs,"busco_run.log")
     shell:
         """
-        busco -i {input} -o {output} \
+        busco -i {input} -o {output.dir} \
             -l {params.lineage} -m genome --miniprot \
-            -c {threads} --download_path {params.busco_dir} &> {log}
+            -c {threads} --download_path {params.busco_dir} -f &> {log}
         """
 
 rule busco_gather:
@@ -314,7 +314,7 @@ rule gff2gtf:
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem = config.resources.small.mem,
-        runtime = config.resources.small.time
+        runtime = config.resources.small.time,
         cpus_per_task = config.resources.small.cpus
     shell:
         "gffread {input} -T -o {output} &> {log}"

@@ -21,7 +21,7 @@ rule lima:
     input:
         lambda wildcards: files[samples.index(wildcards.sample)]
     output:
-        os.path.join(dir.out.isoseq_lima,"{sample}","fl.lima.bam")
+        temp(os.path.join(dir.out.isoseq_lima,"{sample}","fl.lima.bam"))
     conda:
         f"{dir.envs}/isoseq.yaml"
     params:
@@ -33,10 +33,10 @@ rule lima:
     threads:
         config.resources.big.get("cpus", 4)
     resources:
-        slurm_extra = f"'--qos={config.resources.big.qos}'",
-        cpus_per_task = config.resources.big.cpus,
+        slurm_extra = f"\'--qos={config.resources.big.qos}\'",
         mem = config.resources.big.mem,
-        runtime =  config.resources.big.time
+        cpus_per_task = config.resources.big.cpus,
+        runtime = config.resources.big.time
     shell:
         """
         lima {input} {params.primers} {params.output} \
@@ -48,7 +48,7 @@ rule refine:
     input:
         lima = os.path.join(dir.out.isoseq_lima,"{sample}","fl.lima.bam")
     output:
-        os.path.join(dir.out.isoseq_refine,"{sample}","{sample}.flnc.bam")
+        temp(os.path.join(dir.out.isoseq_refine,"{sample}","{sample}.flnc.bam"))
     conda:
         f"{dir.envs}/isoseq.yaml"
     log:
@@ -58,10 +58,10 @@ rule refine:
     threads:
         config.resources.small.get("cpus", 4)
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        cpus_per_task = config.resources.small.cpus,
+        runtime = config.resources.small.time
     shell:
         """
         isoseq refine --require-polya {input.lima} {params.primers} {output} &> {log}
@@ -91,10 +91,10 @@ rule cluster:
     threads:
         config.resources.small.get("cpus", 4)
     resources:
-        slurm_extra = f"'--qos={config.resources.medium.qos}'",
-        cpus_per_task = config.resources.medium.cpus,
+        slurm_extra = f"\'--qos={config.resources.medium.qos}\'",
+        cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small_bigMem.mem,
-        runtime =  config.resources.medium.time
+        runtime = config.resources.medium.time
     shell:
         """
         isoseq cluster2 {input} {output.bam} &> {log}

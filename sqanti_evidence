@@ -31,6 +31,9 @@ def run_smk(conf,jobs,dryrun,unlock,rerun_incomplete,slurm,extras,slurm_extras):
         cmd += ' --ri'
     if slurm:
         cmd += ' --executor slurm'
+        # Add meaningful job names for Slurm queue
+        if slurm_extras is None or '--jobname' not in slurm_extras:
+            cmd += ' --jobname "{rulename}.{jobid}"'
         if slurm_extras != None:
             cmd += f' {slurm_extras}'
     if extras:
@@ -55,3 +58,4 @@ if __name__ == '__main__':
     parser = argparser()
     args = parser.parse_args()
     run_smk(args.config, args.jobs, args.dryrun, args.unlock, args.rerun_incomplete, args.slurm,args.extras,args.slurm_extras)
+

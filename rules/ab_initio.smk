@@ -3,46 +3,33 @@ import os
 
 # Setup local rules (do not require much resources)
 localrules: new_species, identify_bad_genes, extract_stop_codon_freq
-#TODO: move to a module
-def calculate_gene_number(file_path):
-    count = 0
-    try:
-        with open(file_path, 'r') as file:
-            for line in file:
-                count += line.upper().count("LOCUS")
-        return count
-    except FileNotFoundError:
-        print(f"Error: The file '{file_path}' was not found.")
-        return None
-    except IOError:
-        print(f"Error: Unable to read the file '{file_path}'.")
-        return None
-
 
 rule busco_run:
     input:
         genome = config.required.genome
     output:
-        directory(dir.out.ab_busco)
+        dir = directory(dir.out.ab_busco),
+        tmp1 = temp(os.path.join(dir.out.ab_busco,f"run_{config.ab_initio.lineage}","miniprot_output","ref.mpi")),
+        tmp2 = temp(os.path.join(dir.out.ab_busco,"logs",f"miniprot_align_{config.ab_initio.lineage}_out.log"))
     conda:
         f"{dir.envs}/busco.yaml"  
     params:
         busco_dir = dir.tools_busco,
         lineage = config.ab_initio.lineage
     resources:
-        slurm_extra = f"'--qos={config.resources.busco.qos}'",
+        slurm_extra = f"\'--qos={config.resources.busco.qos}\'",
         cpus_per_task = config.resources.busco.cpus,
         mem = config.resources.busco.mem,
-        runtime =  config.resources.busco.time
+        runtime = config.resources.busco.time
     threads:
         config.resources.busco.cpus,
     log:
         os.path.join(dir.logs,"busco_run.log")
     shell:
         """
-        busco -i {input} -o {output} \
+        busco -i {input} -o {output.dir} \
             -l {params.lineage} -m genome --miniprot \
-            -c {threads} --download_path {params.busco_dir} &> {log}
+            -c {threads} --download_path {params.busco_dir} -f &> {log}
         """
 
 rule busco_gather:
@@ -54,10 +41,10 @@ rule busco_gather:
         lineage = config.ab_initio.lineage,
         gene_type = "single"
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     conda:
         os.path.join(dir.envs,"busco.yaml")
     log:
@@ -75,10 +62,10 @@ rule clustering_busco_genes:
     log:
         os.path.join(dir.logs,"clustering_busco_genes.log")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     shell:
         """
         dir=$(dirname {output})
@@ -98,10 +85,10 @@ rule concatenate_gff:
     log:
         os.path.join(dir.logs,"concatenate_gff.log")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     run:
         with open(input.gene_list) as f:
             gene_names = [line.strip() for line in f if line.strip()]
@@ -122,10 +109,10 @@ rule filter_miniprot_genes:
     log:
         os.path.join(dir.logs,"filter_miniprot_genes.log")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time,
+        runtime = config.resources.small.time
     shell:
         """
         Rscript {dir.scripts}/filter_miniprot_genes.R {input} {output} {params.threshold} &> {log}
@@ -144,10 +131,10 @@ rule gff2genbank:
     log:
         os.path.join(dir.logs,"gff2genbank.log")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     shell:
         """
         gff2gbSmallDNA.pl {input.gff} {input.genome} {params.flanking_region} {output} &> {log}
@@ -164,10 +151,10 @@ rule generate_subsets:
     log:
         os.path.join(dir.logs,"generate_subset.log")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     script:
         os.path.join(dir.scripts,"generate_subset.py")
 
@@ -186,10 +173,10 @@ rule new_species:
     log:
         os.path.join(dir.logs,"new_species.log")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     shell:
         """
         rm -rf $AUGUSTUS_CONFIG_PATH/species/{params.name}
@@ -209,10 +196,10 @@ rule initial_etraining:
     log:
         os.path.join(dir.logs,"initial_etraining.log")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     shell:
         "etraining --species={params.name} {input.gb} &> {output}"
 
@@ -222,10 +209,10 @@ rule identify_bad_genes:
     output:
         bad = os.path.join(dir.out.ab_augustus_training,"bad.lst")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     shell:
         "grep 'in sequence' {input} | cut -f7 -d' ' | sed s/://g | sort -u > {output}"
 
@@ -238,10 +225,10 @@ rule filter_genes:
     conda:
         os.path.join(dir.envs,"augustus.yaml")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     shell:
         "filterGenes.pl {input.bad_list} {input.gb} > {output}"
 
@@ -255,10 +242,10 @@ rule retrain:
     params:
         name = config.augustus.species_name
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     shell:
         "etraining --species={params.name} {input} > {output}"
 
@@ -284,10 +271,10 @@ rule modify_stop_codon_freq:
     log:
         os.path.join(dir.logs,"modify_stop_codon_freq.log")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     script:
         os.path.join(dir.scripts,"modify_SC_freq.py")
 
@@ -308,10 +295,10 @@ else:
         log:
             os.path.join(dir.logs,"run_augustus.log")
         resources:
-            slurm_extra = f"'--qos={config.resources.big.qos}'",
+            slurm_extra = f"\'--qos={config.resources.big.qos}\'",
             cpus_per_task = config.resources.big.cpus,
             mem = config.resources.big.mem,
-            runtime =  config.resources.big.time
+            runtime = config.resources.big.time
         shell:
             "augustus --species={params.name} {input.genome} --protein=on --codingseq=on > {output} 2> {log}"
 
@@ -325,9 +312,9 @@ rule gff2gtf:
     log:
         os.path.join(dir.logs,"gff2gtf.log")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time,
+        cpus_per_task = config.resources.small.cpus
     shell:
         "gffread {input} -T -o {output} &> {log}"

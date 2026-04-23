@@ -3,6 +3,7 @@ required:
   input: ""
   outdir: "results"
   toolsdir: "/home/pabloati/Programs/lr_annotation"
+  log_level: "INFO"  # Logging level: DEBUG, INFO, WARNING, ERROR
 augustus:
   prediction: "ab_initio" # Options: "ab_initio" or "evidence_driven"
   reference_gtf: "data/mm39.ncbiRefSeq.gtf"
@@ -11,6 +12,7 @@ augustus:
   mode: split
 qc:
   omark_db: Metazoa
+  omark_taxid: 10090
 ab_initio:
   busco_downloads: "busco_downloads"
   lineage: "eutheria_odb10"
@@ -20,23 +22,23 @@ ab_initio:
 resources:
   big:
     cpus: 10
-    mem: 20G
-    time: 24h
+    mem_mb: 20480
+    time_min: 1440
     qos: long
   busco:
     cpus: 30
-    mem: 60G
-    time: 120h
+    mem_mb: 61440
+    time_min: 7200
     qos: long
   small:
     cpus: 2
-    mem: 8G
-    time: 2h
+    mem_mb: 8192
+    time_min: 120
     qos: short
   small_bigMem:
-    mem: 20G
+    mem_mb: 20480
   medium:
     cpus: 8
-    mem: 12G
-    time: 10h
+    mem_mb: 12288
+    time_min: 600
     qos: short

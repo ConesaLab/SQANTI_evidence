@@ -1,10 +1,11 @@
 {
     "rest":[
         {"RTS_stage": "FALSE",
-        "exons": 2,
+        "exons": 1,
         "seq_A_downstream_TTS": [0,59],
         "all_canonical": "canonical",
-        "predicted_NMD": "FALSE"
+        "predicted_NMD": "FALSE",
+        "psauron_score": 0.7
         }
     ]
 }

@@ -330,8 +330,8 @@ rule placebo_gtf:
         os.path.join(dir.logs,"placebo_gtf.log")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        cpus_per_task = {config.resources.small.cpus},
-        mem = {config.resources.small.mem},
-        runtime = {config.resources.small.time}"
+        cpus_per_task = config.resources.small.cpus,
+        mem = config.resources.small.mem,
+        runtime = config.resources.small.time
     script:
         os.path.join(dir.scripts,"generate_placebo_gtf.py")

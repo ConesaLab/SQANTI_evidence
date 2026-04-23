@@ -130,15 +130,15 @@ def log_config_summary(logger, config):
     
     # Augustus parameters
     logger.info("Augustus Configuration:")
-    logger.info(f"  Prediction mode: {config.augustus.prediction}")
-    if config.augustus.prediction == "evidence_driven":
+    logger.info(f"  Prediction mode: {config.augustus.sqanti_gtf_type}")
+    if config.augustus.sqanti_gtf_type == "evidence_driven":
         logger.info(f"  Reference GTF: {config.augustus.reference_gtf}")
     logger.info(f"  Species name: {config.augustus.species_name}")
     logger.info(f"  UTR: {config.augustus.utr}")
     logger.info(f"  Mode: {config.augustus.mode}")
     
     # Ab initio parameters
-    if config.augustus.prediction == "ab_initio":
+    if config.augustus.sqanti_gtf_type == "ab_initio":
         logger.info("Ab Initio Configuration:")
         logger.info(f"  BUSCO lineage: {config.ab_initio.lineage}")
         logger.info(f"  Miniprot threshold: {config.ab_initio.miniprot_threshold}")

@@ -3,14 +3,18 @@ import logging
 
 def get_sqanti_gtf(config):
     logger = logging.getLogger('pipeline')
-    if config.augustus.prediction == "ab_initio":
+    if config.augustus.sqanti_gtf_type == "ab_initio":
         result = os.path.join(dir.out.ab_augustus,"ab_initio_prediction.gtf")
         logger.debug(f"Using ab_initio prediction GTF: {result}")
         return result
-    elif config.augustus.prediction == "evidence_driven":
+    elif config.augustus.sqanti_gtf_type == "user_defined":
         result = config.augustus.reference_gtf
         logger.debug(f"Using evidence-driven reference GTF: {result}")
         return result
+    elif config.augustus.sqanti_gtf_type == "placebo":
+        results = os.path.join(dir.out.ab_initio,"placebo.gtf")
+        logger.debug(f"Using placebo GTF: {results}")
+        return results
 
 def get_sample_name(file):
     logger = logging.getLogger('pipeline')
@@ -44,9 +48,3 @@ def get_genome_name(file):
     genome_name = os.path.splitext(os.path.basename(file))[0]
     logger.debug(f"Extracted genome name: {genome_name}")
     return genome_name
-
-# def get_final_annotation(config):
-#     if config.augustus.prediction == "ab_initio":
-#         return os.path.join(dir.out.ab_augustus,"ab_initio_prediction.gtf")
-#     elif config.augustus.prediction == "evidence_driven":
-#         return os.path.join(dir.out.evidence_driven,"{group}_prediction.gtf").

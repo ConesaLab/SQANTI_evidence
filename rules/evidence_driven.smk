@@ -9,7 +9,7 @@ rule run_sqanti:
     output:
         classification = os.path.join(dir.out.ed_sqanti,f"{sp_name}_classification.txt"),
         gtf = os.path.join(dir.out.ed_sqanti,f"{sp_name}_corrected.cds.gtf"),
-        td2 = temp(directory(os.path.join(dir.out.ed_sqanti,"TD2")))
+        #td2 = temp(directory(os.path.join(dir.out.ed_sqanti,"TD2")))
     threads:
         config.resources.medium.cpus
     conda:

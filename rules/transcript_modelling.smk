@@ -1,12 +1,14 @@
 
 if filetype == ".bam":
-    rule bam2fastq:
+    rule fastq2bam:
         input:
             config.required.input
         output:
-            os.path.join(dir.out.isoseq,f"{sample}.fastq")
+            os.path.join(dir.out.isoseq,f"{sample}.bam")
         conda:
-            f"{dir.envs}/minimap2.yaml"
+            f"{dir.envs}/sqanti3.yaml"
+        params:
+            bam = os.path.join(dir.envs,"pacbio_mock.bam")
         threads:
             config.resources.small.cpus
         resources:
@@ -14,10 +16,8 @@ if filetype == ".bam":
             cpus_per_task = config.resources.small.cpus,
             mem = config.resources.small.mem,
             runtime = config.resources.small.time
-        shell:
-            """
-            samtools fastq {input} > {output}
-            """
+        script:
+            os.path.join(dir.scripts,"fastq2bam.py")
 
 rule index_genome:
     input:

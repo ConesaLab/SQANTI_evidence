@@ -23,14 +23,15 @@ def get_sample_name(file):
     logger.debug(f"Detected sample name: {sample}, file type: {filetype}")
     return sample, filetype
 
+#TODO: Change this so bam is predefined input
 def get_pbmm2_input(filetype,config,sample):
     logger = logging.getLogger('pipeline')
-    if filetype == ".fastq":
-        logger.debug(f"Input is FASTQ, using direct input: {config.required.input}")
+    if filetype == ".bam":
+        logger.debug(f"Input is BAM, using direct input: {config.required.input}")
         return config.required.input
     else:
-        result = os.path.join(dir.out.isoseq,f"{sample}.fastq")
-        logger.debug(f"Input is not FASTQ, will use converted file: {result}")
+        result = os.path.join(dir.out.isoseq,f"{sample}.bam")
+        logger.debug(f"Input is not BAM, will use converted file: {result}")
         return result
 
 def get_chromosomes(file):

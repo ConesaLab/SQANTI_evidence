@@ -94,7 +94,7 @@ else:
             os.path.join(dir.envs,"augustus.yaml")
         params:
             name = config.augustus.species_name,
-            extcfg = config.augustus.config if config.evidence_driven.config else f"{dir.envs}/extrinsic.M.RM.PB.cfg"
+            extcfg = config.augustus.config if config.augustus.config and os.path.isfile(config.augustus.config) else f"{dir.envs}/extrinsic.M.RM.PB.cfg"
         log:
             os.path.join(dir.logs,"run_augustus_ed.log")
         resources:

@@ -1,5 +1,5 @@
 
-localrules: install_sqanti, install_tama, download_omark_db
+localrules: install_sqanti, install_gaqet2, download_omark_db
 
 rule install_sqanti:
     output:

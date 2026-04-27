@@ -1,23 +1,22 @@
 
-if filetype == ".bam":
-    rule fastq2bam:
-        input:
-            config.required.input
-        output:
-            os.path.join(dir.out.isoseq,f"{sample}.bam")
-        conda:
-            f"{dir.envs}/sqanti3.yaml"
-        params:
-            bam = os.path.join(dir.envs,"pacbio_mock.bam")
-        threads:
-            config.resources.small.cpus
-        resources:
-            slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-            cpus_per_task = config.resources.small.cpus,
-            mem = config.resources.small.mem,
-            runtime = config.resources.small.time
-        script:
-            os.path.join(dir.scripts,"fastq2bam.py")
+rule fastq2bam:
+    input:
+        config.required.input
+    output:
+        os.path.join(dir.out.isoseq,f"{sample}.bam")
+    conda:
+        f"{dir.envs}/sqanti3.yaml"
+    params:
+        bam = os.path.join(dir.envs,"pacbio_mock.bam")
+    threads:
+        config.resources.small.cpus
+    resources:
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
+        cpus_per_task = config.resources.small.cpus,
+        mem = config.resources.small.mem,
+        runtime = config.resources.small.time
+    script:
+        os.path.join(dir.scripts,"fastq2bam.py")
 
 rule index_genome:
     input:
@@ -65,10 +64,9 @@ rule mapping_reads_pbmm2:
 rule collapse_isoforms:
     input:
         mapped = os.path.join(dir.out.isoseq_mapping,f"{sample}.mapping_pbmm2.bam"),
-        #flnc = os.path.join(config.required.flnc_dir,"{sample}","{sample}.flnc.bam")
     output:
         gff = os.path.join(dir.out.isoseq_collapsed,f"{sample}.collapsed.gff"),
-        fastq = temp(os.path.join(dir.out.isoseq_collapsed,f"{sample}.collapsed.fastq"))
+        stats = temp(os.path.join(dir.out.isoseq_collapsed,f"{sample}.collapsed.read_stat.txt"))
     conda:
         f"{dir.envs}/isoseq.yaml"
     log:

@@ -15,9 +15,21 @@ def main():
     hint_input = snakemake.input.hints
     hintfiles = hint_input if isinstance(hint_input, list) else [hint_input]
     out = snakemake.output.gff
+    
+    # Extraer parámetro de modo de filtrado de la configuración
+    filter_mode = 'monoexon'
+    try:
+        if 'augustus' in snakemake.config and 'filter_mode' in snakemake.config['augustus']:
+            filter_mode = snakemake.config['augustus']['filter_mode']
+        elif hasattr(snakemake.config, 'augustus') and hasattr(snakemake.config.augustus, 'filter_mode'):
+            filter_mode = snakemake.config.augustus.filter_mode
+    except Exception:
+        pass
+
     quiet = False
 
     if not quiet:
+        sys.stderr.write(f'### MODO DE FILTRADO: {filter_mode.upper()}\n')
         sys.stderr.write(f'### LEYENDO PREDICCIÓN DE GENES: [{gtf_file}]\n')
     
     # Cargar el GTF
@@ -66,17 +78,21 @@ def main():
             else:
                 filtered_out_count += 1
         else:
-            # Transcrito multiexónico, comprobamos si tiene al menos un intrón soportado
-            supported = False
-            for intron_line in tx.transcript_lines.get('intron', []):
-                if evi.get_hint(tx.chr, intron_line[3], intron_line[4], 'intron', tx.strand):
-                    supported = True
-                    break
-            
-            if supported:
-                keep_txs[tx_id] = tx
+            if filter_mode == 'all':
+                # Transcrito multiexónico, comprobamos si tiene al menos un intrón soportado
+                supported = False
+                for intron_line in tx.transcript_lines.get('intron', []):
+                    if evi.get_hint(tx.chr, intron_line[3], intron_line[4], 'intron', tx.strand):
+                        supported = True
+                        break
+                
+                if supported:
+                    keep_txs[tx_id] = tx
+                else:
+                    filtered_out_count += 1
             else:
-                filtered_out_count += 1
+                # Conservamos todos los multiexónicos según el modo "monoexon"
+                keep_txs[tx_id] = tx
 
     if not quiet:
         sys.stderr.write(f'### SE FILTRARON {filtered_out_count} TRANSCRITOS MONOEXÓNICOS\n')

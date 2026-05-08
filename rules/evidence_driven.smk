@@ -56,7 +56,7 @@ rule filter_isoforms:
         """
         export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
         python {dir.tools_sqanti}/sqanti3_filter.py rules --sqanti_class {input.classification} --filter_gtf {input.gtf} \
-            -j {params.json_rules} --dir {dir.out.ed_sqanti} \
+            -j {params.json_rules} --dir {dir.out.ed_sqanti} --skip_report \
             --output {params.sp_name} &> {log}
         """
 

@@ -4,7 +4,7 @@ rule agat_cleaning:
     input:
         os.path.join(dir.out.ed_augustus,"Augustus_prediction.filtered.gff")
     output:
-        protected(os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff"))
+        os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
@@ -66,7 +66,7 @@ rule gaqet2_plot:
     input:
         os.path.join(dir.out.qc_gaqet2,f"{sample}_GAQET.stats.tsv")
     output:
-        protected(os.path.join(dir.out.qc_gaqet2,f"{sample}_GAQET.plot.png"))
+        os.path.join(dir.out.qc_gaqet2,f"{sample}_GAQET.plot.png")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,

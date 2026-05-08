@@ -5,14 +5,15 @@ def process_transcript(t_id, chrom, strand, exons, cds, out_file, cds_dict):
     if not exons:
         return
         
-    hint_attrs = f"grp={t_id};pri=1;src=PB"
+    hint_attrs = f"grp={t_id};pri=1;src=lrRNA"
     
     # Sort coordinates just in case they appear out of order in the GFF
     exons.sort()
     
     # 1. Generate Exon hints
-    for ex_start, ex_end in exons:
-        out_file.write(f"{chrom}\tHints\texon\t{ex_start}\t{ex_end}\t.\t{strand}\t.\t{hint_attrs}\n")
+    for i, (ex_start, ex_end) in enumerate(exons):
+        hint_type = "exonpart" if i == 0 or i == len(exons) - 1 else "exon"
+        out_file.write(f"{chrom}\tHints\t{hint_type}\t{ex_start}\t{ex_end}\t.\t{strand}\t.\t{hint_attrs}\n")
         
     # 2. Generate Intron hints
     for i in range(len(exons) - 1):

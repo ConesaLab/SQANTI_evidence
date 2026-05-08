@@ -66,8 +66,17 @@ def main():
             else:
                 filtered_out_count += 1
         else:
-            # Transcrito multiexónico, lo conservamos automáticamente
-            keep_txs[tx_id] = tx
+            # Transcrito multiexónico, comprobamos si tiene al menos un intrón soportado
+            supported = False
+            for intron_line in tx.transcript_lines.get('intron', []):
+                if evi.get_hint(tx.chr, intron_line[3], intron_line[4], 'intron', tx.strand):
+                    supported = True
+                    break
+            
+            if supported:
+                keep_txs[tx_id] = tx
+            else:
+                filtered_out_count += 1
 
     if not quiet:
         sys.stderr.write(f'### SE FILTRARON {filtered_out_count} TRANSCRITOS MONOEXÓNICOS\n')

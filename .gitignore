@@ -3,3 +3,9 @@
 test/
 
 scripts/__pycache__
+
+# Gemini-specific files
+GEMINI.md
+LEARNINGS.gemini.md
+docs/
+GIT_HISTORY.txt

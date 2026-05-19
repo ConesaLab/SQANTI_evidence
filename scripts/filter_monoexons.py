@@ -7,7 +7,7 @@ import sys
 import os
 
 def main():
-    # Importar las clases locales de TSEBRA
+    # Import local TSEBRA classes
     from genome_anno import Anno
     from evidence import Evidence
 
@@ -16,7 +16,7 @@ def main():
     hintfiles = hint_input if isinstance(hint_input, list) else [hint_input]
     out = snakemake.output.gff
     
-    # Extraer parámetro de modo de filtrado de la configuración
+    # Extract filter mode from configuration
     filter_mode = 'monoexon'
     try:
         if 'augustus' in snakemake.config and 'filter_mode' in snakemake.config['augustus']:
@@ -29,44 +29,44 @@ def main():
     quiet = False
 
     if not quiet:
-        sys.stderr.write(f'### MODO DE FILTRADO: {filter_mode.upper()}\n')
-        sys.stderr.write(f'### LEYENDO PREDICCIÓN DE GENES: [{gtf_file}]\n')
+        sys.stderr.write(f'### FILTER MODE: {filter_mode.upper()}\n')
+        sys.stderr.write(f'### READING GENE PREDICTION: [{gtf_file}]\n')
     
-    # Cargar el GTF
+    # Load the GTF
     anno = Anno(gtf_file, 'anno1')
     anno.addGtf()
     anno.norm_tx_format()
 
-    # Cargar las evidencias (hints)
+    # Load extrinsic evidence (hints)
     evi = Evidence()
     for h in hintfiles:
         if not quiet:
-            sys.stderr.write(f'### LEYENDO EVIDENCIA EXTRÍNSECA: [{h}]\n')
+            sys.stderr.write(f'### READING EXTRINSIC EVIDENCE: [{h}]\n')
         evi.add_hintfile(h)
 
     if not quiet:
-        sys.stderr.write('### FILTRANDO TRANSCRITOS MONOEXÓNICOS SIN SOPORTE\n')
+        sys.stderr.write('### FILTERING UNSUPPORTED TRANSCRIPTS\n')
 
     keep_txs = {}
     filtered_out_count = 0
 
-    # Iterar sobre todos los transcritos
+    # Iterate over all transcripts
     for tx_id, tx in anno.transcripts.items():
-        # Comprobar si el transcrito tiene intrones
+        # Check if the transcript has introns
         has_introns = 'intron' in tx.transcript_lines and len(tx.transcript_lines['intron']) > 0
         
         if not has_introns:
-            # Es un transcrito monoexónico, comprobamos si tiene soporte de hints
+            # Monoexonic transcript, check for hint support
             supported = False
             
-            # Buscar soporte en los codones de inicio (start)
+            # Search for support in start codons
             for sc_line in tx.transcript_lines.get('start_codon', []):
-                # sc_line[3] es start, sc_line[4] es end
+                # sc_line[3] is start, sc_line[4] is end
                 if evi.get_hint(tx.chr, sc_line[3], sc_line[4], 'start', tx.strand):
                     supported = True
                     break
                     
-            # Si no está soportado por start, buscar en los codones de parada (stop)
+            # If not supported by start, check stop codons
             if not supported:
                 for sc_line in tx.transcript_lines.get('stop_codon', []):
                     if evi.get_hint(tx.chr, sc_line[3], sc_line[4], 'stop', tx.strand):
@@ -79,7 +79,7 @@ def main():
                 filtered_out_count += 1
         else:
             if filter_mode == 'all':
-                # Transcrito multiexónico, comprobamos si tiene al menos un intrón soportado
+                # Multi-exon transcript, check if at least one intron is supported
                 supported = False
                 for intron_line in tx.transcript_lines.get('intron', []):
                     if evi.get_hint(tx.chr, intron_line[3], intron_line[4], 'intron', tx.strand):
@@ -91,22 +91,22 @@ def main():
                 else:
                     filtered_out_count += 1
             else:
-                # Conservamos todos los multiexónicos según el modo "monoexon"
+                # Keep all multi-exon transcripts based on "monoexon" mode
                 keep_txs[tx_id] = tx
 
     if not quiet:
-        sys.stderr.write(f'### SE FILTRARON {filtered_out_count} TRANSCRITOS MONOEXÓNICOS\n')
-        sys.stderr.write('### ESCRIBIENDO RESULTADOS\n')
+        sys.stderr.write(f'### FILTERED OUT {filtered_out_count} TRANSCRIPTS\n')
+        sys.stderr.write('### WRITING RESULTS\n')
 
-    # Crear una nueva anotación con los transcritos filtrados
+    # Create a new annotation with filtered transcripts
     filtered_anno = Anno('', 'filtered_annotation')
-    filtered_anno.transcripts = keep_txs  # Asignamos directamente para evitar un bug en add_transcripts
+    filtered_anno.transcripts = keep_txs  # Assign directly to avoid a bug in add_transcripts
     filtered_anno.find_genes()
     filtered_anno.write_anno(out)
 
     if not quiet:
-        sys.stderr.write('### FINALIZADO\n\n')
-        sys.stderr.write(f'### La predicción filtrada se encuentra en {out}.\n')
+        sys.stderr.write('### FINISHED\n\n')
+        sys.stderr.write(f'### Filtered prediction is available at {out}.\n')
 
 if __name__ == '__main__':
     main()

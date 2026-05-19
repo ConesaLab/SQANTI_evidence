@@ -1,0 +1,7 @@
+feature	enabled
+exon	false
+exonpart	false
+intron	true
+CDS	true
+start	false
+stop	false

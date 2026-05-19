@@ -2,6 +2,10 @@
 import glob
 import attrmap as ap
 
+include: os.path.join("rules","setup","functions.smk")
+
+# Validate and automatically fill config parameters
+config = validate_and_fill_config(config)
 config = ap.AttrMap(config)
 
 localrules: all, install_tama, install_sqanti
@@ -10,7 +14,6 @@ localrules: all, install_tama, install_sqanti
 include: os.path.join("rules","setup","directories.smk")
 include: os.path.join("rules","setup","installations.smk")
 include: os.path.join("rules","setup","logging_setup.smk")
-include: os.path.join("rules","setup","functions.smk")
 
 sample,filetype = get_sample_name(str(config.required.input))
 genome_name = get_genome_name(str(config.required.genome))

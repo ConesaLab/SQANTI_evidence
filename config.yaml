@@ -5,11 +5,13 @@ required:
   toolsdir: "/home/pabloati/Programs/lr_annotation"
   log_level: "INFO"  # Logging level: DEBUG, INFO, WARNING, ERROR
 augustus:
-  sqanti_gtf_type: "ab_initio" # Options: "ab_initio","user_defined" or placebo
   reference_gtf: "data/mm39.ncbiRefSeq.gtf"
   species_name: "trial"
   utr: True
   mode: split
+sqanti:
+  sqanti_gtf_type: "placebo" # Options: "ab_initio","user_defined" or "placebo"
+  json_rules: "data/sqanti_rules.json"
 qc:
   omark_db: Metazoa
   omark_taxid: 10090

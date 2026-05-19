@@ -63,7 +63,8 @@ rule filter_isoforms:
 rule extract_hints:
     input:
         gtf = os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
-        classification = os.path.join(dir.out.ed_sqanti,f"{sp_name}_classification.txt")
+        classification = os.path.join(dir.out.ed_sqanti,f"{sp_name}_classification.txt"),
+        hint_config = "envs/hint_config.tsv"
     output:
         os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff")
     conda:

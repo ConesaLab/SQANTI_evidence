@@ -1,6 +1,7 @@
 .vscode
 .snakemake
 test/
+hints_trial
 
 scripts/__pycache__
 
@@ -9,3 +10,4 @@ GEMINI.md
 LEARNINGS.gemini.md
 docs/
 GIT_HISTORY.txt
+scripts/__pycache__/input_check.cpython-312.pyc

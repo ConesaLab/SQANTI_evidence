@@ -5,7 +5,6 @@ rule run_sqanti:
         isoforms = os.path.join(dir.out.isoseq_collapsed,f"{sample}.collapsed.gff"),
         ref_gff = get_sqanti_gtf(config),
         ref_genome = config.required.genome,
-        sqanti = os.path.join(dir.tools_sqanti,"sqanti_installed.done")
     output:
         classification = os.path.join(dir.out.ed_sqanti,f"{sp_name}_classification.txt"),
         gtf = os.path.join(dir.out.ed_sqanti,f"{sp_name}_corrected.cds.gtf"),
@@ -64,7 +63,7 @@ rule extract_hints:
     input:
         gtf = os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
         classification = os.path.join(dir.out.ed_sqanti,f"{sp_name}_classification.txt"),
-        hint_config = "envs/hint_config.tsv"
+        hint_config = config["augustus"]["hint_config"] if "hint_config" in config["augustus"] else os.path.join(dir.envs, "hint_config.tsv")
     output:
         os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff")
     conda:

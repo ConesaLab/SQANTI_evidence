@@ -1,14 +1,13 @@
-sp_name=config.augustus.species_name
+sp_name=config.prediction.species
 
 rule run_sqanti:
     input:
         isoforms = os.path.join(dir.out.isoseq_collapsed,f"{sample}.collapsed.gff"),
         ref_gff = get_sqanti_gtf(config),
-        ref_genome = config.required.prediction_genome,
+        ref_genome = config.project.prediction_genome,
     output:
         classification = os.path.join(dir.out.ed_sqanti,f"{sp_name}_classification.txt"),
         gtf = os.path.join(dir.out.ed_sqanti,f"{sp_name}_corrected.cds.gtf"),
-        #td2 = temp(directory(os.path.join(dir.out.ed_sqanti,"TD2")))
     threads:
         config.resources.medium.cpus
     conda:
@@ -44,7 +43,7 @@ rule filter_isoforms:
     threads:
         config.resources.small.cpus
     params:
-        json_rules = config.sqanti.json_rules,
+        json_rules = config.curation.filter_rules,
         sp_name = sp_name
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
@@ -63,14 +62,13 @@ rule extract_hints:
     input:
         gtf = os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
         classification = os.path.join(dir.out.ed_sqanti,f"{sp_name}_classification.txt"),
-        hint_config = config["augustus"]["hint_config"] if "hint_config" in config["augustus"] else os.path.join(dir.envs, "hint_config.tsv")
+        hint_config = config.prediction.hint_config
     output:
         os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff")
     conda:
         os.path.join(dir.envs,"busco.yaml")
     params:
-        utr = config.augustus.utr
-        #TODO: Perhaps add techonolgy and priority options
+        utr = config.prediction.utr
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
@@ -79,13 +77,13 @@ rule extract_hints:
     script:
         os.path.join(dir.scripts,"generate_hints.py")
 
-if config.augustus.mode == "split":
+if config.prediction.mode == "split":
     include: "split_augustus.smk"
 
 else:
     rule augustus_hints:
         input:
-            genome = config.required.prediction_genome,
+            genome = config.project.prediction_genome,
             mod = os.path.join(dir.out.ab_augustus_training,"SC_freq_mod.done"),
             gff = os.path.join(dir.out.ed_hints,f"{sp_name}.hints.gff")
         output:
@@ -93,8 +91,8 @@ else:
         conda:
             os.path.join(dir.envs,"augustus.yaml")
         params:
-            name = config.augustus.species_name,
-            extcfg = config.augustus.config if config.augustus.config and os.path.isfile(config.augustus.config) else f"{dir.envs}/extrinsic.M.RM.PB.cfg"
+            name = config.prediction.species,
+            extcfg = config.prediction.hint_weights
         log:
             os.path.join(dir.logs,"run_augustus_ed.log")
         resources:

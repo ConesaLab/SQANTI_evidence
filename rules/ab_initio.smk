@@ -6,14 +6,14 @@ localrules: new_species, identify_bad_genes, extract_stop_codon_freq
 
 rule busco_run:
     input:
-        genome = config.required.genome
+        genome = config.project.genome
     output:
         dir = directory(dir.out.ab_busco),
     conda:
         f"{dir.envs}/busco.yaml"  
     params:
         busco_dir = dir.tools_busco,
-        lineage = config.ab_initio.lineage,
+        lineage = config.training.lineage,
         out_name = os.path.basename(dir.out.ab_busco),
         out_path = os.path.abspath(os.path.dirname(dir.out.ab_busco))
     resources:
@@ -38,7 +38,7 @@ rule busco_gather:
     output:
         genes=os.path.join(dir.out.ab_augustus_model,"busco_genes.faa")
     params:
-        lineage = config.ab_initio.lineage,
+        lineage = config.training.lineage,
         gene_type = "single"
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
@@ -80,7 +80,7 @@ rule concatenate_gff:
     output:
         os.path.join(dir.out.ab_augustus_model,"busco_genes.gff")
     params:
-        lineage = config.ab_initio.lineage,
+        lineage = config.training.lineage,
         gene_type = "single"
     log:
         os.path.join(dir.logs,"concatenate_gff.log")
@@ -105,7 +105,7 @@ rule filter_miniprot_genes:
     conda:
         os.path.join(dir.envs,"basic.yaml")
     params:
-        threshold = config.ab_initio.miniprot_threshold
+        threshold = config.training.miniprot_threshold
     log:
         os.path.join(dir.logs,"filter_miniprot_genes.log")
     resources:
@@ -120,14 +120,14 @@ rule filter_miniprot_genes:
 
 rule gff2genbank:
     input:
-        genome = config.required.genome,
+        genome = config.project.genome,
         gff = os.path.join(dir.out.ab_augustus_model,"busco_genes.filtered.gff")
     output:
         gen_bank = temp(os.path.join(dir.out.ab_augustus_model,"busco_genes.gb"))
     conda:
         os.path.join(dir.envs,"busco.yaml")
     params:
-        flanking_region = config.ab_initio.flanking_region
+        flanking_region = config.training.flanking_region
     log:
         os.path.join(dir.logs,"gff2genbank.log")
     resources:
@@ -146,7 +146,7 @@ rule generate_subsets:
     output:
         gen_bank_out = os.path.join(dir.out.ab_augustus_model,"busco_genes.subset.gb")
     params:
-        size = config.ab_initio.test_size,
+        size = config.training.test_size,
         seed = 123
     log:
         os.path.join(dir.logs,"generate_subset.log")
@@ -164,11 +164,11 @@ rule new_species:
     input:
         gen_bank = os.path.join(dir.out.ab_augustus_model,"busco_genes.subset.gb")
     output:
-        touch(os.path.join(dir.out.ab_augustus_model,f"{config.augustus.species_name}.done"))
+        touch(os.path.join(dir.out.ab_augustus_model,f"{config.prediction.species}.done"))
     conda:
         os.path.join(dir.envs,"augustus.yaml")
     params:
-        name = config.augustus.species_name,
+        name = config.prediction.species,
         augustus_dir = os.environ.get("AUGUSTUS_CONFIG_PATH")
     log:
         os.path.join(dir.logs,"new_species.log")
@@ -186,13 +186,13 @@ rule new_species:
 rule initial_etraining:
     input:
         gb = os.path.join(dir.out.ab_augustus_model,"busco_genes.subset.gb"),
-        new_species = os.path.join(dir.out.ab_augustus_model,f"{config.augustus.species_name}.done")
+        new_species = os.path.join(dir.out.ab_augustus_model,f"{config.prediction.species}.done")
     output:
         training = os.path.join(dir.out.ab_augustus_training,"etrain.out")
     conda:
         os.path.join(dir.envs,"augustus.yaml")
     params:
-        name = config.augustus.species_name
+        name = config.prediction.species
     log:
         os.path.join(dir.logs,"initial_etraining.log")
     resources:
@@ -240,7 +240,7 @@ rule retrain:
     conda:
         os.path.join(dir.envs,"augustus.yaml")
     params:
-        name = config.augustus.species_name
+        name = config.prediction.species
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
@@ -265,7 +265,7 @@ rule modify_stop_codon_freq:
     output:
         mod = os.path.join(dir.out.ab_augustus_training,"SC_freq_mod.done")
     params:
-        name = config.augustus.species_name
+        name = config.prediction.species
     conda:
         os.path.join(dir.envs,"augustus.yaml")
     log:
@@ -279,19 +279,19 @@ rule modify_stop_codon_freq:
         os.path.join(dir.scripts,"modify_SC_freq.py")
 
 # TODO: Is there any way to increase augustus usage to >1 core?
-if config.augustus.mode == "split":
+if config.prediction.mode == "split":
     include: "split_augustus.smk"
 else:
     rule run_augustus:
         input:
-            genome = config.required.genome,
+            genome = config.project.genome,
             mod = os.path.join(dir.out.ab_augustus_training,"SC_freq_mod.done")
         output:
             os.path.join(dir.out.ab_augustus,"ab_initio_prediction.gff")
         conda:
             os.path.join(dir.envs,"augustus.yaml")
         params:
-            name = config.augustus.species_name
+            name = config.prediction.species
         log:
             os.path.join(dir.logs,"run_augustus.log")
         resources:
@@ -321,7 +321,7 @@ rule gff2gtf:
 
 rule placebo_gtf:
     input:
-        config.required.genome
+        config.project.genome
     output:
         os.path.join(dir.out.ab_initio,"placebo.gtf")
     conda:

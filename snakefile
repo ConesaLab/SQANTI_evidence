@@ -15,13 +15,13 @@ include: os.path.join("rules","setup","directories.smk")
 include: os.path.join("rules","setup","installations.smk")
 include: os.path.join("rules","setup","logging_setup.smk")
 
-sample,filetype = get_sample_name(str(config.required.input))
-genome_name = get_genome_name(str(config.required.genome))
+sample,filetype = get_sample_name(str(config.project.input))
+genome_name = get_genome_name(str(config.project.genome))
 
 # Snakemake hooks for logging
 onstart:
     global pipeline_logger
-    log_level = config.required.log_level 
+    log_level = config.project.log_level 
     if log_level is None:
         log_level = "INFO"
     pipeline_logger = setup_pipeline_logger(log_level=log_level, log_dir=dir.logs)
@@ -79,4 +79,4 @@ rule all:
     input:
         os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff"),
         os.path.join(dir.out.qc_gaqet2,f"{sample}_GAQET.plot.png"),
-        os.path.join(dir.out.qc_agat, f"{sample}.stats") if config.augustus.reference_gtf and os.path.isfile(config.augustus.reference_gtf) else []
+        os.path.join(dir.out.qc_agat, f"{sample}.stats") if config.evaluation.reference_gtf and os.path.isfile(config.evaluation.reference_gtf) else []

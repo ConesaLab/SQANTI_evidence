@@ -19,10 +19,10 @@ def main():
     # Extract filter mode from configuration
     filter_mode = 'monoexon'
     try:
-        if 'augustus' in snakemake.config and 'filter_mode' in snakemake.config['augustus']:
-            filter_mode = snakemake.config['augustus']['filter_mode']
-        elif hasattr(snakemake.config, 'augustus') and hasattr(snakemake.config.augustus, 'filter_mode'):
-            filter_mode = snakemake.config.augustus.filter_mode
+        if 'prediction' in snakemake.config and 'filter_mode' in snakemake.config['prediction']:
+            filter_mode = snakemake.config['prediction']['filter_mode']
+        elif hasattr(snakemake.config, 'prediction') and hasattr(snakemake.config.prediction, 'filter_mode'):
+            filter_mode = snakemake.config.prediction.filter_mode
     except Exception:
         pass
 

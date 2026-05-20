@@ -121,33 +121,35 @@ def log_config_summary(logger, config):
     logger.info("PIPELINE CONFIGURATION SUMMARY")
     logger.info("=" * 60)
     
-    # Required parameters
-    logger.info("Required Parameters:")
-    logger.info(f"  Genome: {config.required.genome}")
-    logger.info(f"  Input: {config.required.input}")
-    logger.info(f"  Output directory: {config.required.outdir}")
-    logger.info(f"  Tools directory: {config.required.toolsdir}")
+    # Project parameters
+    logger.info("Project Settings:")
+    logger.info(f"  Genome: {config.project.genome}")
+    logger.info(f"  Input: {config.project.input}")
+    logger.info(f"  Output directory: {config.project.outdir}")
+    logger.info(f"  Tools directory: {config.project.toolsdir}")
     
-    # Augustus parameters
-    logger.info("Augustus Configuration:")
-    logger.info(f"  Prediction mode: {config.augustus.sqanti_gtf_type}")
-    if config.augustus.sqanti_gtf_type == "evidence_driven":
-        logger.info(f"  Reference GTF: {config.augustus.reference_gtf}")
-    logger.info(f"  Species name: {config.augustus.species_name}")
-    logger.info(f"  UTR: {config.augustus.utr}")
-    logger.info(f"  Mode: {config.augustus.mode}")
+    # Training parameters
+    logger.info("Training Configuration:")
+    logger.info(f"  BUSCO lineage: {config.training.lineage}")
+    logger.info(f"  Miniprot ID threshold: {config.training.miniprot_id}")
+    logger.info(f"  Flanking region: {config.training.flanking}")
     
-    # Ab initio parameters
-    if config.augustus.sqanti_gtf_type == "ab_initio":
-        logger.info("Ab Initio Configuration:")
-        logger.info(f"  BUSCO lineage: {config.ab_initio.lineage}")
-        logger.info(f"  Miniprot threshold: {config.ab_initio.miniprot_threshold}")
-        logger.info(f"  Flanking region: {config.ab_initio.flanking_region}")
+    # Prediction parameters
+    logger.info("Prediction Configuration:")
+    logger.info(f"  Species name: {config.prediction.species}")
+    logger.info(f"  UTR: {config.prediction.utr}")
+    logger.info(f"  Mode: {config.prediction.mode}")
     
-    # QC parameters
-    logger.info("Quality Control Configuration:")
-    logger.info(f"  OMARK database: {config.qc.omark_db}")
-    logger.info(f"  OMARK taxid: {config.qc.omark_taxid}")
+    # Curation parameters
+    logger.info("Curation Configuration:")
+    logger.info(f"  Mode: {config.curation.mode}")
+    
+    # Evaluation parameters
+    logger.info("Evaluation Configuration:")
+    if config.evaluation.reference_gtf:
+        logger.info(f"  Reference GTF: {config.evaluation.reference_gtf}")
+    logger.info(f"  OMARK database: {config.evaluation.omark_db}")
+    logger.info(f"  OMARK taxid: {config.evaluation.omark_taxid}")
     
     logger.info("=" * 60)
 

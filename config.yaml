@@ -1,46 +1,56 @@
-required:
+project:
   genome: ""
   input: ""
-  outdir: "results"
+  outdir: "SQANTI_evidence_results"
   toolsdir: "/home/pabloati/Programs/lr_annotation"
-  log_level: "INFO"  # Logging level: DEBUG, INFO, WARNING, ERROR
-augustus:
-  reference_gtf: "data/mm39.ncbiRefSeq.gtf"
-  species_name: "trial"
-  utr: True
-  mode: split
-sqanti:
-  sqanti_gtf_type: "placebo" # Options: "ab_initio","user_defined" or "placebo"
-  json_rules: "data/sqanti_rules.json"
-qc:
-  omark_db: Metazoa
-  omark_taxid: 10090
-ab_initio:
-  busco_downloads: "busco_downloads"
+  prediction_genome: "" # Defaults to project.genome if empty
+  log_level: "INFO"
+
+training:
+  skip: False
   lineage: "eutheria_odb10"
-  miniprot_threshold: 0.95 # Minimum identity threshold for miniprot gene models
+  miniprot_threshold: 0.95
   flanking_region: 1000
   test_size: 5000
+  busco_downloads: "busco_downloads"
+
+prediction:
+  species: "trial"
+  mode: "split" # Options: split, full
+  utr: True
+  hint_config: "envs/hint_config.tsv"
+  hint_weights: "envs/extrinsic.M.RM.PB.cfg"
+
+curation:
+  mode: "placebo" # Options: ab_initio, placebo, user
+  user_gtf: ""    # Path to custom GTF if mode is 'user'
+  filter_rules: "envs/filter_rules.json"
+
+evaluation:
+  reference_gtf: "data/mm39.ncbiRefSeq.gtf"
+  omark_db: "LUCA"
+  omark_taxid: 10090
+
 resources:
-  big:
-    cpus: 10
-    mem_mb: 20480
-    time_min: 1440
-    qos: long
-  busco:
-    cpus: 30
-    mem_mb: 61440
-    time_min: 7200
-    qos: long
   small:
     cpus: 2
     mem_mb: 8192
     time_min: 120
-    qos: short
-  small_bigMem:
-    mem_mb: 20480
+    qos: "short"
   medium:
     cpus: 8
     mem_mb: 12288
     time_min: 600
-    qos: short
+    qos: "short"
+  big:
+    cpus: 10
+    mem_mb: 20480
+    time_min: 1440
+    qos: "long"
+  busco:
+    cpus: 30
+    mem_mb: 61440
+    time_min: 7200
+    qos: "long"
+  small_bigMem:
+    mem_mb: 20480

@@ -22,7 +22,7 @@ rule agat_cleaning:
         """
 rule gaqet2_setup:
     input:
-        genome = config.required.genome,
+        genome = config.project.prediction_genome,
         annotation = os.path.join(dir.out.ed_augustus,"Augustus_prediction.filtered.gff"),
     output:
         os.path.join(dir.out.qc_gaqet2,"gaqet2_config.yaml")
@@ -32,9 +32,9 @@ rule gaqet2_setup:
         config = os.path.join(dir.envs, "gaqet2_conf.yaml"),
         id = sample,
         outdir = dir.out.qc_gaqet2,
-        busco_lineage = config.ab_initio.lineage,
-        taxid = config.qc.omark_taxid,
-        omark_db = os.path.join(dir.tools_omark,f"{config.qc.omark_db}.h5"),
+        busco_lineage = config.training.lineage,
+        taxid = config.evaluation.omark_taxid,
+        omark_db = os.path.join(dir.tools_omark,f"{config.evaluation.omark_db}.h5"),
         threads = config.resources.medium.cpus
     log:
         os.path.join(dir.logs, "gaqet2_setup.log")
@@ -85,7 +85,7 @@ rule gaqet2_plot:
 
 rule gffcompare_eval:
     input:
-        ref = config.augustus.reference_gtf,
+        ref = config.evaluation.reference_gtf,
         anno = os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff")
     output:
         stats = os.path.join(dir.out.qc_agat, f"{sample}.stats") # Reusing qc_agat or creating a new dir

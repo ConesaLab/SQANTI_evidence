@@ -1,7 +1,7 @@
 
 rule fastq2bam:
     input:
-        config.required.input
+        config.project.input
     output:
         os.path.join(dir.out.isoseq,f"{sample}.bam")
     conda:
@@ -20,7 +20,7 @@ rule fastq2bam:
 
 rule index_genome:
     input:
-        genome = config.required.genome
+        genome = config.project.genome
     output:
         os.path.join(dir.tools_index,genome_name,"index.mmi")
     conda:

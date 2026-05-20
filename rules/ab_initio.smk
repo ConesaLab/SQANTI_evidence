@@ -13,7 +13,9 @@ rule busco_run:
         f"{dir.envs}/busco.yaml"  
     params:
         busco_dir = dir.tools_busco,
-        lineage = config.ab_initio.lineage
+        lineage = config.ab_initio.lineage,
+        out_name = os.path.basename(dir.out.ab_busco),
+        out_path = os.path.abspath(os.path.dirname(dir.out.ab_busco))
     resources:
         slurm_extra = f"\'--qos={config.resources.busco.qos}\'",
         cpus_per_task = config.resources.busco.cpus,
@@ -25,7 +27,7 @@ rule busco_run:
         os.path.join(dir.logs,"busco_run.log")
     shell:
         """
-        busco -i {input} -o {output.dir} \
+        busco -i {input} -o {params.out_name} --out_path {params.out_path} \
             -l {params.lineage} -m genome --miniprot \
             -c {threads} --download_path {params.busco_dir} -f &> {log}
         """

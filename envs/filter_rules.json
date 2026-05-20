@@ -1,9 +1,9 @@
 {
     "rest":[
-        {"RTS_stage": "FALSE",
-        "exons": 1,
-        "seq_A_downstream_TTS": [0,59],
+        {"exons": 1,
+        "perc_A_downstream_TTS": [0,59],
         "all_canonical": "canonical",
+        "CDS_length": 100,
         "predicted_NMD": "FALSE",
         "psauron_score": 0.7
         }

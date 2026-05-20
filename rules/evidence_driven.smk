@@ -25,8 +25,8 @@ rule run_sqanti:
     shell:
         #TODO: Eliminate this for the final release, as it is only used in Garnatxa
         """
-        export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
-        python {dir.tools_sqanti}/sqanti3_qc.py --isoforms {input.isoforms} --refGTF {input.ref_gff} --refFasta {input.ref_genome} \
+        #export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
+        sqanti3_qc.py --isoforms {input.isoforms} --refGTF {input.ref_gff} --refFasta {input.ref_genome} \
             --dir {dir.out.ed_sqanti} --output {params.sp_name} -t {threads} --include_ORF --report skip &> {log}
         mv {dir.out.ed_sqanti}/{params.sp_name}_corrected.cds.gff3 {output.gtf}
         """
@@ -53,8 +53,8 @@ rule filter_isoforms:
         runtime = config.resources.small.time
     shell:
         """
-        export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
-        python {dir.tools_sqanti}/sqanti3_filter.py rules --sqanti_class {input.classification} --filter_gtf {input.gtf} \
+        #export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
+        sqanti3_filter.py rules --sqanti_class {input.classification} --filter_gtf {input.gtf} \
             -j {params.json_rules} --dir {dir.out.ed_sqanti} --skip_report \
             --output {params.sp_name} &> {log}
         """

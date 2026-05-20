@@ -9,8 +9,6 @@ rule busco_run:
         genome = config.required.genome
     output:
         dir = directory(dir.out.ab_busco),
-        tmp1 = temp(os.path.join(dir.out.ab_busco,f"run_{config.ab_initio.lineage}","miniprot_output","ref.mpi")),
-        tmp2 = temp(os.path.join(dir.out.ab_busco,"logs",f"miniprot_align_{config.ab_initio.lineage}_out.log"))
     conda:
         f"{dir.envs}/busco.yaml"  
     params:

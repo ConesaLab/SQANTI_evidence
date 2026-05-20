@@ -1,9 +1,9 @@
-chromosomes=get_chromosomes(config.required.genome)
+chromosomes=get_chromosomes(config.required.prediction_genome)
 sp_name = config.augustus.species_name
 
 rule split_fasta:
     input:
-        fasta = config.required.genome
+        fasta = config.required.prediction_genome
     output:
         touch(os.path.join(dir.tools_reference,genome_name,f"{genome_name}_split.done"))
     resources:
@@ -31,7 +31,7 @@ rule ed_augusuts_per_chromosome:
         f"{dir.envs}/augustus.yaml"
     params:
         name = config.augustus.species_name,
-        extcfg = f"{dir.envs}/extrinsic.M.RM.PB.cfg"
+        extcfg = config.augustus.config if config.augustus.config and os.path.isfile(config.augustus.config) else f"{dir.envs}/extrinsic.M.RM.PB.cfg"
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,

@@ -78,4 +78,5 @@ include: os.path.join("rules","quality_control.smk")
 rule all:
     input:
         os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff"),
-        os.path.join(dir.out.qc_gaqet2,f"{sample}_GAQET.plot.png")
+        os.path.join(dir.out.qc_gaqet2,f"{sample}_GAQET.plot.png"),
+        os.path.join(dir.out.qc_agat, f"{sample}.stats") if config.augustus.reference_gtf and os.path.isfile(config.augustus.reference_gtf) else []

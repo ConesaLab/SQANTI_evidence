@@ -82,4 +82,19 @@ rule gaqet2_plot:
         """
         GAQET_PLOT -i {input} -o {output} &> {log}
         """
+
+rule gffcompare_eval:
+    input:
+        ref = config.augustus.reference_gtf,
+        anno = os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff")
+    output:
+        stats = os.path.join(dir.out.qc_agat, f"{sample}.stats") # Reusing qc_agat or creating a new dir
+    params:
+        out_prefix = os.path.join(dir.out.qc_agat, f"{sample}")
+    conda:
+        os.path.join(dir.envs, "gffcompare.yaml")
+    log:
+        os.path.join(dir.logs, "gffcompare.log")
+    shell:
+        "gffcompare -r {input.ref} -o {params.out_prefix} {input.anno} &> {log}"
     

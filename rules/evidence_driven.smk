@@ -4,7 +4,7 @@ rule run_sqanti:
     input:
         isoforms = os.path.join(dir.out.isoseq_collapsed,f"{sample}.collapsed.gff"),
         ref_gff = get_sqanti_gtf(config),
-        ref_genome = config.required.genome,
+        ref_genome = config.required.prediction_genome,
     output:
         classification = os.path.join(dir.out.ed_sqanti,f"{sp_name}_classification.txt"),
         gtf = os.path.join(dir.out.ed_sqanti,f"{sp_name}_corrected.cds.gtf"),
@@ -85,7 +85,7 @@ if config.augustus.mode == "split":
 else:
     rule augustus_hints:
         input:
-            genome = config.required.genome,
+            genome = config.required.prediction_genome,
             mod = os.path.join(dir.out.ab_augustus_training,"SC_freq_mod.done"),
             gff = os.path.join(dir.out.ed_hints,f"{sp_name}.hints.gff")
         output:

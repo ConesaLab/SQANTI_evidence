@@ -19,6 +19,7 @@ def validate_and_fill_config(config_dict):
         
     req.setdefault("outdir", "results")
     req.setdefault("log_level", "INFO")
+    req.setdefault("prediction_genome", req.get("genome"))
     
     # 2. augustus
     if "augustus" not in config_dict:

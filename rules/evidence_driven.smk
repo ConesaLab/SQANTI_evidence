@@ -1,26 +1,26 @@
-sp_name=config.prediction.species
+sp_name = config.prediction.species
+
 
 rule run_sqanti:
     input:
-        isoforms = os.path.join(dir.out.isoseq_collapsed,f"{sample}.collapsed.gff"),
-        ref_gff = get_sqanti_gtf(config),
-        ref_genome = config.project.genome,
+        isoforms=os.path.join(dir.out.isoseq_collapsed, f"{sample}.collapsed.gff"),
+        ref_gff=get_sqanti_gtf(config),
+        ref_genome=config.project.genome,
     output:
-        classification = os.path.join(dir.out.ed_sqanti,f"{sp_name}_classification.txt"),
-        gtf = os.path.join(dir.out.ed_sqanti,f"{sp_name}_corrected.cds.gtf"),
-    threads:
-        config.resources.medium.cpus
+        classification=os.path.join(dir.out.ed_sqanti, f"{sp_name}_classification.txt"),
+        gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}_corrected.cds.gtf"),
+    log:
+        os.path.join(dir.logs, "run_sqanti.log"),
     conda:
         f"{dir.envs}/sqanti3.yaml"
-    params:
-        sp_name = sp_name
-    log:
-        os.path.join(dir.logs,"run_sqanti.log")
+    threads: config.resources.medium.cpus
     resources:
-        slurm_extra = f"\'--qos={config.resources.medium.qos}\'",
-        cpus_per_task = config.resources.medium.cpus,
-        mem = config.resources.big.mem,
-        runtime = config.resources.medium.time
+        slurm_extra=f"'--qos={config.resources.medium.qos}'",
+        cpus_per_task=config.resources.medium.cpus,
+        mem=config.resources.big.mem,
+        runtime=config.resources.medium.time,
+    params:
+        sp_name=sp_name,
     shell:
         #TODO: Eliminate this for the final release, as it is only used in Garnatxa
         """
@@ -30,26 +30,26 @@ rule run_sqanti:
         mv {dir.out.ed_sqanti}/{params.sp_name}_corrected.cds.gff3 {output.gtf}
         """
 
+
 rule filter_isoforms:
     input:
-        classification = os.path.join(dir.out.ed_sqanti,f"{sp_name}_classification.txt"),
-        gtf = os.path.join(dir.out.ed_sqanti,f"{sp_name}_corrected.cds.gtf")
+        classification=os.path.join(dir.out.ed_sqanti, f"{sp_name}_classification.txt"),
+        gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}_corrected.cds.gtf"),
     output:
-        gtf = os.path.join(dir.out.ed_sqanti,f"{sp_name}.filtered.gtf")
-    conda:
-        os.path.join(dir.envs,"sqanti3.yaml")
+        gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
     log:
-        os.path.join(dir.logs,"filter_sqanti.log")
-    threads:
-        config.resources.small.cpus
-    params:
-        json_rules = config.curation.filter_rules,
-        sp_name = sp_name
+        os.path.join(dir.logs, "filter_sqanti.log"),
+    conda:
+        os.path.join(dir.envs, "sqanti3.yaml")
+    threads: config.resources.small.cpus
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
-        runtime = config.resources.small.time
+        slurm_extra=f"'--qos={config.resources.small.qos}'",
+        cpus_per_task=config.resources.small.cpus,
+        mem=config.resources.small.mem,
+        runtime=config.resources.small.time,
+    params:
+        json_rules=config.curation.filter_rules,
+        sp_name=sp_name,
     shell:
         """
         #export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
@@ -58,70 +58,75 @@ rule filter_isoforms:
             --output {params.sp_name} &> {log}
         """
 
+
 rule extract_hints:
     input:
-        gtf = os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
-        classification = os.path.join(dir.out.ed_sqanti,f"{sp_name}_classification.txt"),
-        hint_config = config.prediction.hint_config
+        gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
+        classification=os.path.join(dir.out.ed_sqanti, f"{sp_name}_classification.txt"),
+        hint_config=config.prediction.hint_config,
     output:
-        os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff")
+        os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff"),
     conda:
-        os.path.join(dir.envs,"busco.yaml")
-    params:
-        utr = config.prediction.utr
+        os.path.join(dir.envs, "busco.yaml")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
-        runtime = config.resources.small.time
+        slurm_extra=f"'--qos={config.resources.small.qos}'",
+        cpus_per_task=config.resources.small.cpus,
+        mem=config.resources.small.mem,
+        runtime=config.resources.small.time,
+    params:
+        utr=config.prediction.utr,
     script:
-        os.path.join(dir.scripts,"generate_hints.py")
+        os.path.join(dir.scripts, "generate_hints.py")
+
 
 if config.prediction.mode == "split":
+
     include: "split_augustus.smk"
 
 else:
+
     rule augustus_hints:
         input:
-            genome = config.project.prediction_genome,
-            mod = os.path.join(dir.out.ab_augustus_training,"SC_freq_mod.done"),
-            gff = os.path.join(dir.out.ed_hints,f"{sp_name}.hints.gff")
+            genome=config.project.prediction_genome,
+            mod=os.path.join(dir.out.ab_augustus_training, "SC_freq_mod.done"),
+            gff=os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff"),
         output:
-            os.path.join(dir.out.ed_augustus,"Augustus_prediction.gff")
-        conda:
-            os.path.join(dir.envs,"augustus.yaml")
-        params:
-            name = config.prediction.species,
-            extcfg = config.prediction.hint_weights
+            os.path.join(dir.out.ed_augustus, "Augustus_prediction.gff"),
         log:
-            os.path.join(dir.logs,"run_augustus_ed.log")
+            os.path.join(dir.logs, "run_augustus_ed.log"),
+        conda:
+            os.path.join(dir.envs, "augustus.yaml")
         resources:
-            slurm_extra = f"\'--qos={config.resources.big.qos}\'",
-            cpus_per_task = config.resources.big.cpus,
-            mem = config.resources.big.mem,
-            runtime = config.resources.big.time
+            slurm_extra=f"'--qos={config.resources.big.qos}'",
+            cpus_per_task=config.resources.big.cpus,
+            mem=config.resources.big.mem,
+            runtime=config.resources.big.time,
+        params:
+            name=config.prediction.species,
+            extcfg=config.prediction.hint_weights,
         shell:
             """
             augustus --species={params.name} {input.genome} --hintsfile={input.gff} \
-            --extrinsicCfgFile={params.extcfg} --protein=on --codingseq=on > {output} 2> {log}
+            --extrinsicCfgFile={params.extcfg} --protein=on --codingseq=on \
+            --alternatives-from-evidence=true > {output} 2> {log}
             """
+
 
 rule filter_monoexons:
     input:
-        gff = os.path.join(dir.out.ed_augustus,"Augustus_prediction.gff"),
-        hints = os.path.join(dir.out.ed_hints,f"{sp_name}.hints.gff")
+        gff=os.path.join(dir.out.ed_augustus, "Augustus_prediction.gff"),
+        hints=os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff"),
     output:
-        gff = os.path.join(dir.out.ed_augustus,"Augustus_prediction.filtered.gff")
-    conda:
-        os.path.join(dir.envs,"busco.yaml")
+        gff=os.path.join(dir.out.ed_augustus, "Augustus_prediction.filtered.gff"),
     log:
-        os.path.join(dir.logs,"filter_monoexons.log")
-    threads:
-        config.resources.small.cpus
+        os.path.join(dir.logs, "filter_monoexons.log"),
+    conda:
+        os.path.join(dir.envs, "busco.yaml")
+    threads: config.resources.small.cpus
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
-        runtime = config.resources.small.time
+        slurm_extra=f"'--qos={config.resources.small.qos}'",
+        cpus_per_task=config.resources.small.cpus,
+        mem=config.resources.small.mem,
+        runtime=config.resources.small.time,
     script:
-        os.path.join(dir.scripts,"filter_monoexons.py")
+        os.path.join(dir.scripts, "filter_monoexons.py")

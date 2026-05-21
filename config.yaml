@@ -7,7 +7,6 @@ project:
   log_level: "INFO"
 
 training:
-  skip: False
   lineage: "eutheria_odb10"
   miniprot_threshold: 0.95
   flanking_region: 1000

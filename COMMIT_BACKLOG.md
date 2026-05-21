@@ -2,6 +2,14 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-05-21] - Rule Refactoring and Alternative Splicing Support
+- **Branch**: `dev-hint_testing`
+- **Goal**: Improve code maintainability and enhance Augustus prediction accuracy using long-read evidence.
+- **Summary**:
+    - Performed a major style refactoring of `rules/ab_initio.smk` and `rules/evidence_driven.smk` to improve consistency and readability.
+    - Enabled `--alternatives-from-evidence=true` in the `augustus_hints` rule (`rules/evidence_driven.smk`) to better leverage long-read evidence for predicting alternative splicing isoforms.
+    - Cleaned up `config.yaml` by removing the redundant `training.skip` parameter.
+
 ## [2026-05-21] - Fix Default Filter Rules Path Resolution
 - **Branch**: `dev-hint_testing`
 - **Goal**: Fix a bug where the default filter rules path was resolving incorrectly in a Snakemake context.

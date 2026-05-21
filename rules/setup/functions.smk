@@ -58,8 +58,9 @@ def validate_and_fill_config(config_dict):
     if "curation" not in config_dict:
         config_dict["curation"] = {}
     cur = config_dict["curation"]
-    if not cur.get("filter_rules"):
-        raise ValueError("ERROR: 'curation.filter_rules' (JSON rules path) is required.")
+
+    if not cur.get("filter_rules") or not os.path.isfile(cur.get("filter_rules")):
+        cur["filter_rules"] = os.path.join(envs_dir, "filter_rules.json")
         
     cur.setdefault("mode", "placebo")
     cur.setdefault("user_gtf", "")

@@ -2,6 +2,19 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-05-21] - Default SQANTI Filtering Rules
+- **Branch**: `dev-hint_testing`
+- **Goal**: Improve user experience by providing sensible defaults for transcript curation.
+- **Summary**:
+    - Modified `rules/setup/functions.smk` to automatically default to `envs/filter_rules.json` if `curation.filter_rules` is missing or points to a non-existent file.
+
+## [2026-05-21] - Documentation and HPC Synchronization
+- **Branch**: `dev-hint_testing`
+- **Goal**: Improve project traceability and synchronize local and remote states.
+- **Summary**:
+    - Updated `GEMINI.md` to include the project's path on the Garnatxa HPC cluster.
+    - Synchronized `rules/evidence_driven.smk` with the fix applied on Garnatxa (setting `ref_genome` to `config.project.genome`).
+
 ## [2026-05-20] - Stable Version Update
 - **Branch**: `dev-hint_testing`
 - **Commit**: `6b959e2`
@@ -9,7 +22,49 @@ This file tracks the history of commits made by the AI agent, providing a high-l
     - Refined SQANTI3 filtering rules in `envs/filter_rules.json` (added `CDS_length` and updated TTS checks).
     - Simplified `rules/ab_initio.smk` by removing redundant temporary file definitions.
     - Updated `rules/evidence_driven.smk` to invoke `sqanti3_qc.py` and `sqanti3_filter.py` more idiomatically, removing hardcoded paths and manual `LD_LIBRARY_PATH` exports.
-- **Goal**: Establish a stable baseline for upcoming hint generation benchmarking on Human Chr19.
+- **Goal**: Ensure pipeline robustness when users provide absolute output paths in the configuration.
+
+## [2026-05-20] - Benchmarking Infrastructure Refactoring
+- **Branch**: `dev-hint_testing`
+- **Goal**: Enable the Human Chr19 benchmarking strategy by decoupling training and prediction genomes and integrating evaluation tools.
+- **Summary**:
+    - Introduced `prediction_genome` in `config.yaml` to allow genome-wide training with subset-specific prediction.
+    - Refactored `split_augustus.smk` to respect the `augustus.config` parameter, enabling weight-sensitivity testing.
+    - Integrated `gffcompare` into the workflow via `rules/quality_control.smk` (using a dedicated `envs/gffcompare.yaml`) for automated F1 score calculation against reference GTFs.
+    - Updated `rule all` to dynamically include evaluation outputs when a reference GTF is provided.
+## [2026-05-20] - Configuration Schema Transition (Revamp)
+- **Status**: COMPLETED
+- **Goal**: Reorganize `config.yaml` into a logical hierarchy to improve modularity and support benchmarking.
+- **Implementation**:
+    - Refactored `rules/setup/functions.smk` to validate the new 5-block structure (`project`, `training`, `prediction`, `curation`, `evaluation`) and handle default path resolutions.
+    - Updated `scripts/input_check.py` to perform strict pre-launch validation on hierarchical keys.
+    - Systematically updated all rules (`ab_initio.smk`, `evidence_driven.smk`, `split_augustus.smk`, `quality_control.smk`, `transcript_modelling.smk`) and the `snakefile` to use new configuration accessors.
+- **Mapping Reference**:
+    | Old Accessor | New Accessor |
+    | :--- | :--- |
+    | `config.required.genome` | `config.project.genome` |
+    | `config.required.input` | `config.project.input` |
+    | `config.required.outdir` | `config.project.outdir` |
+    | `config.required.toolsdir` | `config.project.toolsdir` |
+    | `config.required.prediction_genome` | `config.project.prediction_genome` |
+    | `config.required.log_level` | `config.project.log_level` |
+    | `config.ab_initio.lineage` | `config.training.lineage` |
+    | `config.ab_initio.miniprot_threshold` | `config.training.miniprot_threshold` |
+    | `config.ab_initio.flanking_region` | `config.training.flanking_region` |
+    | `config.ab_initio.test_size` | `config.training.test_size` |
+    | `config.ab_initio.busco_downloads` | `config.training.busco_downloads` |
+    | `config.augustus.species_name` | `config.prediction.species` |
+    | `config.augustus.mode` | `config.prediction.mode` |
+    | `config.augustus.utr` | `config.prediction.utr` |
+    | `config.augustus.config` | `config.prediction.hint_weights` |
+    | `config.augustus.hint_config` | `config.prediction.hint_config` |
+    | `config.sqanti.gtf_type` | `config.curation.mode` |
+    | `config.sqanti.reference_gtf` | `config.curation.user_gtf` |
+    | `config.sqanti.json_rules` | `config.curation.filter_rules` |
+    | `config.augustus.reference_gtf` | `config.evaluation.reference_gtf` |
+    | `config.qc.omark_db` | `config.evaluation.omark_db` |
+    | `config.qc.omark_taxid` | `config.evaluation.omark_taxid` |
+- **Note**: This mapping serves as the blueprint for the manual cleanup and final rule refactoring.
 
 ## [2026-05-19] - Initial Pre-trial State
 - **Branch**: `dev-hint_testing`

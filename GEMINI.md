@@ -7,6 +7,7 @@ SQANTI-evidence is a **Snakemake**-based workflow designed for high-quality stru
 - **Purpose**: Automates the integration of long-read transcriptomics into genome annotation workflows.
 - **Key Technologies**: Snakemake, Python, Conda, Augustus, SQANTI3, BUSCO, Minimap2, GAQET2.
 - **Architecture**: 
+  - **HPC Path (Garnatxa)**: `/home/patienza/oscars/LR_annotation`
   - **Orchestration**: Managed by a central `snakefile` and a Python wrapper `sqanti_evidence`.
   - **Modular Rules**: Pipeline logic is split into functional modules under `rules/` (e.g., `ab_initio.smk`, `evidence_driven.smk`).
   - **Environment Management**: Conda environments for each step are defined in `envs/`.
@@ -71,4 +72,4 @@ Use `config.yaml` as a template. Key sections include:
 - **Modular Rules**: Keep rules focused; use the `include:` directive in the main `snakefile` to pull in modules.
 - **Input Validation**: Use `scripts/input_check.py` and `rules/setup/functions.smk` to validate user configuration before execution.
 - **Logging**: Use the centralized logging setup defined in `rules/setup/logging_setup.smk`.
-- **Commit Backlog**: Maintain a `COMMIT_BACKLOG.md` file in the project root. After every commit, append a new entry summarizing the changes, the branch, the commit hash, and the strategic goal of the work.
+- **Commit Backlog**: Maintain a `COMMIT_BACKLOG.md` file in the project root. ALWAYS update the commit backlog before performing a commit. After every commit, ensure the entry accurately reflects the branch, the commit hash, and the strategic goal of the work.

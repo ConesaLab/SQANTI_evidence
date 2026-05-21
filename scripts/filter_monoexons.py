@@ -16,15 +16,8 @@ def main():
     hintfiles = hint_input if isinstance(hint_input, list) else [hint_input]
     out = snakemake.output.gff
     
-    # Extract filter mode from configuration
-    filter_mode = 'monoexon'
-    try:
-        if 'prediction' in snakemake.config and 'filter_mode' in snakemake.config['prediction']:
-            filter_mode = snakemake.config['prediction']['filter_mode']
-        elif hasattr(snakemake.config, 'prediction') and hasattr(snakemake.config.prediction, 'filter_mode'):
-            filter_mode = snakemake.config.prediction.filter_mode
-    except Exception:
-        pass
+    # Extract filter mode from rule parameters
+    filter_mode = snakemake.params.filter_mode
 
     quiet = False
 

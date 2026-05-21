@@ -46,6 +46,9 @@ def validate_and_fill_config(config_dict):
     prd.setdefault("utr", True)
     prd.setdefault("filter_mode", "monoexon")
 
+    if prd["filter_mode"] not in ["monoexon", "all"]:
+        raise ValueError("ERROR: 'prediction.filter_mode' must be either 'monoexon' or 'all'.")
+
     envs_dir = os.path.abspath(os.path.join(workflow.basedir, "envs"))
 
     if not prd.get("hint_config") or not os.path.isfile(prd.get("hint_config")):

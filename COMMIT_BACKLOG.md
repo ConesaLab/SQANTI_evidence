@@ -2,6 +2,14 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-05-21] - Refactor Monoexon Filtering Parameter Handling
+- **Branch**: `dev-hint_testing`
+- **Goal**: Improve robustness and explicit configuration handling for monoexon filtering.
+- **Summary**:
+    - Updated `rules/evidence_driven.smk` to pass `filter_mode` explicitly to the `filter_monoexons` script via rule parameters.
+    - Added validation in `rules/setup/functions.smk` to ensure `prediction.filter_mode` is set to a valid value ("monoexon" or "all").
+    - Simplified `scripts/filter_monoexons.py` by retrieving the filter mode from `snakemake.params` instead of the global configuration object.
+
 ## [2026-05-21] - Rule Refactoring and Alternative Splicing Support
 - **Branch**: `dev-hint_testing`
 - **Goal**: Improve code maintainability and enhance Augustus prediction accuracy using long-read evidence.

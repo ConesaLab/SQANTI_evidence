@@ -128,5 +128,7 @@ rule filter_monoexons:
         cpus_per_task=config.resources.small.cpus,
         mem=config.resources.small.mem,
         runtime=config.resources.small.time,
+    params:
+        filter_mode=config.prediction.filter_mode,
     script:
         os.path.join(dir.scripts, "filter_monoexons.py")

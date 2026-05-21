@@ -46,7 +46,7 @@ def validate_and_fill_config(config_dict):
     prd.setdefault("utr", True)
     prd.setdefault("filter_mode", "monoexon")
 
-    envs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "envs"))
+    envs_dir = os.path.abspath(os.path.join(workflow.basedir, "envs"))
 
     if not prd.get("hint_config") or not os.path.isfile(prd.get("hint_config")):
         prd["hint_config"] = os.path.join(envs_dir, "hint_config.tsv")

@@ -2,6 +2,12 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-05-21] - Fix Default Filter Rules Path Resolution
+- **Branch**: `dev-hint_testing`
+- **Goal**: Fix a bug where the default filter rules path was resolving incorrectly in a Snakemake context.
+- **Summary**:
+    - Updated `rules/setup/functions.smk` to use `workflow.basedir` for resolving the `envs` directory, ensuring consistent path resolution across different execution environments (local and HPC).
+
 ## [2026-05-21] - Default SQANTI Filtering Rules
 - **Branch**: `dev-hint_testing`
 - **Goal**: Improve user experience by providing sensible defaults for transcript curation.

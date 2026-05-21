@@ -4,7 +4,7 @@ rule run_sqanti:
     input:
         isoforms = os.path.join(dir.out.isoseq_collapsed,f"{sample}.collapsed.gff"),
         ref_gff = get_sqanti_gtf(config),
-        ref_genome = config.project.prediction_genome,
+        ref_genome = config.project.genome,
     output:
         classification = os.path.join(dir.out.ed_sqanti,f"{sp_name}_classification.txt"),
         gtf = os.path.join(dir.out.ed_sqanti,f"{sp_name}_corrected.cds.gtf"),

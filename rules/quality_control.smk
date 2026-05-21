@@ -91,6 +91,11 @@ rule gffcompare_eval:
         stats = os.path.join(dir.out.qc_agat, f"{sample}.stats") # Reusing qc_agat or creating a new dir
     params:
         out_prefix = os.path.join(dir.out.qc_agat, f"{sample}")
+    resources:
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
+        cpus_per_task = config.resources.small.cpus,
+        mem = config.resources.small.mem,
+        runtime = config.resources.small.time
     conda:
         os.path.join(dir.envs, "gffcompare.yaml")
     log:

@@ -101,5 +101,49 @@ rule gffcompare_eval:
     log:
         os.path.join(dir.logs, "gffcompare.log")
     shell:
-        "gffcompare -r {input.ref} -o {params.out_prefix} {input.anno} &> {log}"
+        "gffcompare -r {input.ref} -o {params.out_prefix} {input.anno} -T &> {log}"
+
+rule subset_reference_cds:
+    input:
+        ref = config.evaluation.reference_gtf
+    output:
+        ref_cds = os.path.join(dir.out.qc_agat, "reference.cds.gtf")
+    log:
+        os.path.join(dir.logs, "subset_reference_cds.log")
+    conda:
+        os.path.join(dir.envs, "busco.yaml")
+    shell:
+        "python3 {dir.scripts}/subset_cds.py {input.ref} {output.ref_cds} &> {log}"
+
+rule subset_prediction_cds:
+    input:
+        anno = os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff")
+    output:
+        anno_cds = os.path.join(dir.out.qc_agat, f"{sample}.cds.gtf")
+    log:
+        os.path.join(dir.logs, "subset_prediction_cds.log")
+    conda:
+        os.path.join(dir.envs, "busco.yaml")
+    shell:
+        "python3 {dir.scripts}/subset_cds.py {input.anno} {output.anno_cds} &> {log}"
+
+rule gffcompare_cds_eval:
+    input:
+        ref = os.path.join(dir.out.qc_agat, "reference.cds.gtf"),
+        anno = os.path.join(dir.out.qc_agat, f"{sample}.cds.gtf")
+    output:
+        stats = os.path.join(dir.out.qc_agat, f"{sample}_cds.stats")
+    params:
+        out_prefix = os.path.join(dir.out.qc_agat, f"{sample}_cds")
+    resources:
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
+        cpus_per_task = config.resources.small.cpus,
+        mem = config.resources.small.mem,
+        runtime = config.resources.small.time
+    conda:
+        os.path.join(dir.envs, "gffcompare.yaml")
+    log:
+        os.path.join(dir.logs, "gffcompare_cds.log")
+    shell:
+        "gffcompare -r {input.ref} -o {params.out_prefix} {input.anno} -T &> {log}"
     

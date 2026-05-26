@@ -2,6 +2,15 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-05-26] - Integrate CDS-only Comparison into Pipeline
+- **Branch**: `dev-hint_testing`
+- **Goal**: Automate CDS-only benchmark evaluations and prevent gffcompare dot-suffix output naming bugs.
+- **Summary**:
+    - Added `scripts/subset_cds.py` to subset annotations to coding sequences only.
+    - Updated `rules/quality_control.smk` to add `subset_reference_cds`, `subset_prediction_cds`, and `gffcompare_cds_eval` rules, generating `{sample}_cds.stats`.
+    - Added the `-T` flag to both `gffcompare_eval` and `gffcompare_cds_eval` to avoid intermediate file generation.
+    - Modified `snakefile` to add `{sample}_cds.stats` to rule `all` inputs.
+
 ## [2026-05-21] - Refactor Monoexon Filtering Parameter Handling
 - **Branch**: `dev-hint_testing`
 - **Goal**: Improve robustness and explicit configuration handling for monoexon filtering.

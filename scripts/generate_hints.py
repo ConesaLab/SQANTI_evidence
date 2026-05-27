@@ -27,11 +27,21 @@ def process_transcript(t_id, chrom, strand, exons, cds, out_file, cds_dict, conf
         
     # 2. Intron hints
     if config.get('intron', False):
+        extract_all_introns = config.get('exon', False) or config.get('exonpart', False)
+        min_cds = cds[0][0] if cds else None
+        max_cds = cds[-1][1] if cds else None
+        
         for i in range(len(exons) - 1):
             intron_start = exons[i][1] + 1
             intron_end = exons[i+1][0] - 1
             if intron_start <= intron_end:
-                out_file.write(f"{chrom}\tHints\tintron\t{intron_start}\t{intron_end}\t.\t{strand}\t.\t{hint_attrs}\n")
+                if extract_all_introns:
+                    out_file.write(f"{chrom}\tHints\tintron\t{intron_start}\t{intron_end}\t.\t{strand}\t.\t{hint_attrs}\n")
+                else:
+                    # Introns can only be within the CDS range of each transcript
+                    if min_cds is not None and max_cds is not None:
+                        if intron_start >= min_cds and intron_end <= max_cds:
+                            out_file.write(f"{chrom}\tHints\tintron\t{intron_start}\t{intron_end}\t.\t{strand}\t.\t{hint_attrs}\n")
             
     # 3. CDS hints
     if cds and config.get('CDS', False):

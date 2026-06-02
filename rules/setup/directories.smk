@@ -59,7 +59,5 @@ dir.out.ed_augustus = os.path.join(dir.out.evidence_driven, "augustus")
 
 # Quality control
 dir.out.qc = os.path.join(dir.out.base, "quality_control")
-dir.out.qc_omark = os.path.join(dir.out.qc, "omark")
-dir.out.qc_busco = os.path.join(dir.out.qc, "busco")
-dir.out.qc_agat = os.path.join(dir.out.qc, "agat")
+dir.out.qc_gffcompare = os.path.join(dir.out.qc, "gffcompare")
 dir.out.qc_gaqet2 = os.path.join(dir.out.qc, "gaqet2")

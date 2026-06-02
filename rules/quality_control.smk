@@ -88,9 +88,9 @@ rule gffcompare_eval:
         ref = config.evaluation.reference_gtf,
         anno = os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff")
     output:
-        stats = os.path.join(dir.out.qc_agat, f"{sample}.stats") # Reusing qc_agat or creating a new dir
+        stats = os.path.join(dir.out.qc_gffcompare, f"{sample}.stats") 
     params:
-        out_prefix = os.path.join(dir.out.qc_agat, f"{sample}")
+        out_prefix = os.path.join(dir.out.qc_gffcompare, f"{sample}")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
@@ -107,7 +107,7 @@ rule subset_reference_cds:
     input:
         ref = config.evaluation.reference_gtf
     output:
-        ref_cds = os.path.join(dir.out.qc_agat, "reference.cds.gtf")
+        ref_cds = os.path.join(dir.out.qc_gffcompare, "reference.cds.gtf")
     log:
         os.path.join(dir.logs, "subset_reference_cds.log")
     conda:
@@ -119,7 +119,7 @@ rule subset_prediction_cds:
     input:
         anno = os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff")
     output:
-        anno_cds = os.path.join(dir.out.qc_agat, f"{sample}.cds.gtf")
+        anno_cds = os.path.join(dir.out.qc_gffcompare, f"{sample}.cds.gtf")
     log:
         os.path.join(dir.logs, "subset_prediction_cds.log")
     conda:
@@ -129,12 +129,12 @@ rule subset_prediction_cds:
 
 rule gffcompare_cds_eval:
     input:
-        ref = os.path.join(dir.out.qc_agat, "reference.cds.gtf"),
-        anno = os.path.join(dir.out.qc_agat, f"{sample}.cds.gtf")
+        ref = os.path.join(dir.out.qc_gffcompare, "reference.cds.gtf"),
+        anno = os.path.join(dir.out.qc_gffcompare, f"{sample}.cds.gtf")
     output:
-        stats = os.path.join(dir.out.qc_agat, f"{sample}_cds.stats")
+        stats = os.path.join(dir.out.qc_gffcompare, f"{sample}_cds.stats")
     params:
-        out_prefix = os.path.join(dir.out.qc_agat, f"{sample}_cds")
+        out_prefix = os.path.join(dir.out.qc_gffcompare, f"{sample}_cds")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,

@@ -79,5 +79,5 @@ rule all:
     input:
         os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff"),
         os.path.join(dir.out.qc_gaqet2,f"{sample}_GAQET.plot.png"),
-        os.path.join(dir.out.qc_agat, f"{sample}.stats") if config.evaluation.reference_gtf and os.path.isfile(config.evaluation.reference_gtf) else [],
-        os.path.join(dir.out.qc_agat, f"{sample}_cds.stats") if config.evaluation.reference_gtf and os.path.isfile(config.evaluation.reference_gtf) else []
+        os.path.join(dir.out.qc_gffcompare, f"{sample}.stats") if config.evaluation.reference_gtf and os.path.isfile(config.evaluation.reference_gtf) else [],
+        os.path.join(dir.out.qc_gffcompare, f"{sample}_cds.stats") if config.evaluation.reference_gtf and os.path.isfile(config.evaluation.reference_gtf) else []

@@ -108,6 +108,11 @@ rule subset_reference_cds:
         ref = config.evaluation.reference_gtf
     output:
         ref_cds = os.path.join(dir.out.qc_gffcompare, "reference.cds.gtf")
+    resources:
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
+        cpus_per_task = config.resources.small.cpus,
+        mem = config.resources.small.mem,
+        runtime = config.resources.small.time
     log:
         os.path.join(dir.logs, "subset_reference_cds.log")
     conda:
@@ -120,6 +125,11 @@ rule subset_prediction_cds:
         anno = os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff")
     output:
         anno_cds = os.path.join(dir.out.qc_gffcompare, f"{sample}.cds.gtf")
+    resources:
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
+        cpus_per_task = config.resources.small.cpus,
+        mem = config.resources.small.mem,
+        runtime = config.resources.small.time
     log:
         os.path.join(dir.logs, "subset_prediction_cds.log")
     conda:

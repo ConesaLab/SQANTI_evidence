@@ -2,6 +2,13 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-06-04] - Revert Transcript Preprocessing to Align-only Mode
+- **Branch**: `dev-IsoSeq`
+- **Goal**: Revert preprocessing pipeline to start directly from alignment, bypass read clustering.
+- **Summary**:
+    - Removed `cluster` rule from `rules/transcript_modelling.smk`.
+    - Restored `get_pbmm2_input` function as the direct source for the `reads` parameter in the `mapping_reads_pbmm2` rule.
+
 ## [2026-06-04] - Configure Iso-Seq Read Clustering and Resource Parameterization
 - **Branch**: `dev-hint_testing`
 - **Goal**: Integrate consensus transcript clustering into the preprocessing phase and configure production resource properties.

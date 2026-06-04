@@ -18,6 +18,27 @@ rule fastq2bam:
     script:
         os.path.join(dir.scripts,"fastq2bam.py")
 
+rule cluster:
+    input:
+        get_pbmm2_input(filetype,config,sample)
+    output:
+        bam=os.path.join(dir.out.isoseq_cluster,"{sample}.cluster.bam"),
+    conda:
+        f"{dir.envs}/isoseq.yaml"
+    log:
+        os.path.join(dir.logs,"isoseq_cluster_{sample}.log")
+    threads:
+        config.resources.small.get("cpus", 4)
+    resources:
+        slurm_extra = f"\'--qos={config.resources.medium.qos}\'",
+        cpus_per_task = config.resources.small.cpus,
+        mem = config.resources.small_bigMem.mem,
+        runtime = config.resources.medium.time
+    shell:
+        """
+        isoseq cluster2 {input} {output.bam} &> {log}
+        """
+
 rule index_genome:
     input:
         genome = config.project.genome
@@ -40,7 +61,7 @@ rule index_genome:
 
 rule mapping_reads_pbmm2:
     input:
-        reads = get_pbmm2_input(filetype,config,sample),
+        reads = os.path.join(dir.out.isoseq_cluster,"{sample}.cluster.bam")
         index = os.path.join(dir.tools_index,genome_name,"index.mmi")
     output:
         os.path.join(dir.out.isoseq_mapping,f"{sample}.mapping_pbmm2.bam"),

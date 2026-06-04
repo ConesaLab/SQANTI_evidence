@@ -26,30 +26,30 @@ curation:
   filter_rules: "envs/filter_rules.json"
 
 evaluation:
-  reference_gtf: "data/mm39.ncbiRefSeq.gtf"
+  reference_gtf: ""
   omark_db: "LUCA"
   omark_taxid: 10090
 
 resources:
   small:
     cpus: 2
-    mem_mb: 8192
-    time_min: 120
+    mem: "8GB"
+    time: "2h"
     qos: "short"
   medium:
     cpus: 8
-    mem_mb: 12288
-    time_min: 600
+    mem: "12GB"
+    time: "10h"
     qos: "short"
   big:
     cpus: 10
-    mem_mb: 20480
-    time_min: 1440
+    mem: "20GB"
+    time: "24h"
     qos: "long"
   busco:
     cpus: 30
-    mem_mb: 61440
-    time_min: 7200
+    mem: "60GB"
+    time: "72h"
     qos: "long"
   small_bigMem:
-    mem_mb: 20480
+    mem: "20GB"

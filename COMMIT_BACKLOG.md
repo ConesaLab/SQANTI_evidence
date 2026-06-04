@@ -2,6 +2,36 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-06-04] - Configure Iso-Seq Read Clustering and Resource Parameterization
+- **Branch**: `dev-hint_testing`
+- **Goal**: Integrate consensus transcript clustering into the preprocessing phase and configure production resource properties.
+- **Summary**:
+    - Integrated `isoseq cluster2` into `rules/transcript_modelling.smk` under a new `cluster` rule.
+    - Updated `mapping_reads_pbmm2` to utilize the clustered outputs (`{sample}.cluster.bam`) instead of raw input files.
+    - Parameterized Slurm resource limits in `config.yaml` to use human-readable GB and hour units (e.g., `8GB`, `2h`) instead of `mem_mb`/`time_min`.
+    - Renamed source key `PB` to `lrRNA` in `envs/extrinsic.hints_conf.Ale.cfg`.
+    - Cleaned up `localrules` definition in `snakefile` to only register `all`.
+
+## [2026-06-02] - Resource Specification for CDS Subset Rules
+- **Branch**: `dev-hint_testing`
+- **Goal**: Enable Slurm cluster execution for CDS subsetting rules by specifying memory, CPU, and time resources.
+- **Summary**:
+    - Added explicit `resources` definitions to `subset_reference_cds` and `subset_prediction_cds` rules in `rules/quality_control.smk`.
+
+## [2026-06-02] - QC Output Path Refactoring
+- **Branch**: `dev-hint_testing`
+- **Goal**: Restructure quality control directories and targets to use gffcompare.
+- **Summary**:
+    - Updated `rules/setup/directories.smk` to replace directory `qc_agat` with `qc_gffcompare` and cleaned up unused directories (`qc_omark`, `qc_busco`).
+    - Standardized rule output paths in `rules/quality_control.smk` to use the new `qc_gffcompare` directory.
+    - Updated `rule all` in `snakefile` to track `gffcompare` stats.
+
+## [2026-05-27] - Intron Hint Filtering by CDS Coordinates
+- **Branch**: `dev-hint_testing`
+- **Goal**: Prevent out-of-bounds intron predictions when exon hints are disabled.
+- **Summary**:
+    - Modified `scripts/generate_hints.py` to filter intron hints, writing them only if they fall within the minimum and maximum CDS boundaries of the transcript when exon-related hints are disabled.
+
 ## [2026-05-26] - Integrate CDS-only Comparison into Pipeline
 - **Branch**: `dev-hint_testing`
 - **Goal**: Automate CDS-only benchmark evaluations and prevent gffcompare dot-suffix output naming bugs.

@@ -8,7 +8,7 @@ include: os.path.join("rules","setup","functions.smk")
 config = validate_and_fill_config(config)
 config = ap.AttrMap(config)
 
-localrules: all, install_tama, install_sqanti
+localrules: all
 
 # Setup rules
 include: os.path.join("rules","setup","directories.smk")

@@ -2,6 +2,7 @@
 .snakemake
 test/
 hints_trial
+genomes_benchmark/
 
 scripts/__pycache__
 

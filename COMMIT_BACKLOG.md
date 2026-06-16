@@ -10,6 +10,7 @@ This file tracks the history of commits made by the AI agent, providing a high-l
     - Added `scripts/download_sm_genomes.sh` to download softmasked genomes from Ensembl.
     - Updated `config.yaml` to point to `envs/extrinsic.hints_conf.Ale.cfg` for hint weights.
     - Updated genome paths in all model organism configurations in `new_configs/` to point to softmasked (`_sm`) genomes.
+    - Created optimized SLURM wrapper scripts in `wrappers/` with standardized jobnames and unique log files.
 
 ## [2026-06-04] - Revert Transcript Preprocessing to Align-only Mode
 - **Branch**: `dev-IsoSeq`

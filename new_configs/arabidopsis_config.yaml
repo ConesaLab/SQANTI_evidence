@@ -1,5 +1,5 @@
 project:
-  genome: "data/arabidopsis/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa"
+  genome: "data/arabidopsis/Arabidopsis_thaliana.TAIR10.dna_sm.toplevel.fa"
   input: "data/arabidopsis/ERR15191386_clustered.converted.bam"
   outdir: "results/arabidopsis_SQeviq"
   toolsdir: "/home/patienza/Programs/lr_annotation"

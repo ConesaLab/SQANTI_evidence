@@ -1,5 +1,5 @@
 project:
-  genome: "data/sac_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa"
+  genome: "data/sac_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.dna_sm.toplevel.fa"
   input: "data/sac_cerevisiae/SRR11589287_cluster_singletons.bam"
   outdir: "results/saccharomyces_cerevisiae_SQevi"
   toolsdir: "/home/patienza/Programs/lr_annotation"

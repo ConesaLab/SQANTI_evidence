@@ -1,5 +1,5 @@
 project:
-  genome: "/home/patienza/oscars/genomes_benchmark/data/mus_musculus/Mus_musculus.GRCm39.dna.toplevel.fa"
+  genome: "/home/patienza/oscars/genomes_benchmark/data/mus_musculus/Mus_musculus.GRCm39.dna_sm.toplevel.fa"
   input: "/home/patienza/oscars/pipeline_analysis/data/mouse_mix.cluster.bam"
   outdir: "results/mus_musculus_SQevi"
   toolsdir: "/home/patienza/Programs/lr_annotation"

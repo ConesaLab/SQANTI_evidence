@@ -1,5 +1,5 @@
 project:
-  genome: "data/danio_rerio/Danio_rerio.GRCz11.dna.toplevel.fa"
+  genome: "data/danio_rerio/Danio_rerio.GRCz11.dna_sm.toplevel.fa"
   input: "data/danio_rerio/SRR32588721_cluster.bam"
   outdir: "results/danio_rerio_SQevi"
   toolsdir: "/home/patienza/Programs/lr_annotation"

@@ -1,5 +1,5 @@
 project:
-  genome: "data/gallus_gallus/Gallus_gallus.bGalGal1.mat.broiler.GRCg7b.dna.toplevel.fa"
+  genome: "data/gallus_gallus/Gallus_gallus.bGalGal1.mat.broiler.GRCg7b.dna_sm.toplevel.fa"
   input: "data/gallus_gallus/gallus_PacBio_merged.fastq"
   outdir: "results/gallus_gallus_mix_SQevi"
   toolsdir: "/home/patienza/Programs/lr_annotation"

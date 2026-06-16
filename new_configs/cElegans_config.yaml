@@ -1,5 +1,5 @@
 project:
-  genome: "data/c_elegans/Caenorhabditis_elegans.WBcel235.dna.toplevel.fa"
+  genome: "data/c_elegans/Caenorhabditis_elegans.WBcel235.dna_sm.toplevel.fa"
   input: "data/c_elegans/SRR15993154.fastq"
   outdir: "results/cElegans_SQevi"
   toolsdir: "/home/patienza/Programs/lr_annotation"

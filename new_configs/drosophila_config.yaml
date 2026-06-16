@@ -1,5 +1,5 @@
 project:
-  genome: "data/drosophila/Drosophila_melanogaster.BDGP6.54.dna.toplevel.fa"
+  genome: "data/drosophila/Drosophila_melanogaster.BDGP6.54.dna_sm.toplevel.fa"
   input: "data/drosophila/Nanopore_drosophila_mix.clean.fastq"
   outdir: "results/drosophila_SQevi_nanopore"
   toolsdir: "/home/patienza/Programs/lr_annotation"

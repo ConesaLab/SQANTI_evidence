@@ -1,0 +1,50 @@
+project:
+  genome: "/home/patienza/oscars/genomes_benchmark/data/mus_musculus/Mus_musculus.GRCm39.dna.toplevel.fa"
+  input: "/home/patienza/oscars/pipeline_analysis/data/mouse_mix.cluster.bam"
+  outdir: "results/mus_musculus_SQevi"
+  toolsdir: "/home/patienza/Programs/lr_annotation"
+  log_level: "INFO"
+
+training:
+  lineage: "eutheria_odb10"
+  miniprot_threshold: 0.95
+  flanking_region: 1000
+  test_size: 5000
+
+prediction:
+  species: "mouse_miniprot_filter"
+  mode: "split"
+  utr: False
+
+curation:
+  mode: "placebo"
+  filter_rules: "data/filter_rules.json"
+
+evaluation:
+  reference_gtf: "data/mus_musculus/Mus_musculus.GRCm39.115.gtf"
+  omark_db: "Metazoa"
+  omark_taxid: 10090
+
+resources:
+  small:
+    cpus: 2
+    mem: "8G"
+    time: "2h"
+    qos: "short"
+  medium:
+    cpus: 8
+    mem: "120G"
+    time: "10h"
+    qos: "short"
+  big:
+    cpus: 10
+    mem: "30G"
+    time: "24h"
+    qos: "long"
+  busco:
+    cpus: 30
+    mem: "140G"
+    time: "240h"
+    qos: "long"
+  small_bigMem:
+    mem: "30G"

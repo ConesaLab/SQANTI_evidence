@@ -1,0 +1,51 @@
+project:
+  genome: "data/human/Homo_sapiens.GRCh38.dna_sm.toplevel.fa"
+  input: "data/human/wtc_reads.fastq"
+  outdir: "trial/human_SQevi_9Apr"
+  toolsdir: "/home/patienza/Programs/lr_annotation"
+  log_level: "INFO"
+
+training:
+  lineage: "eutheria_odb10"
+  miniprot_threshold: 0.95
+  flanking_region: 1000
+  test_size: 5000
+
+prediction:
+  species: "unknown9Apr_SQevi"
+  mode: "split"
+  utr: False
+
+curation:
+  mode: "user"
+  user_gtf: "/home/patienza/oscars/genomes_benchmark/results/human_SQevi_new/ab_initio/augustus/ab_initio_prediction.gtf"
+  filter_rules: "data/filter_rules.json"
+
+evaluation:
+  reference_gtf: "data/human/Homo_sapiens.GRCh38.115.gtf"
+  omark_db: "Metazoa"
+  omark_taxid: 9606
+
+resources:
+  small:
+    cpus: 2
+    mem: "8G"
+    time: "2h"
+    qos: "short"
+  medium:
+    cpus: 8
+    mem: "20G"
+    time: "10h"
+    qos: "short"
+  big:
+    cpus: 10
+    mem: "60G"
+    time: "24h"
+    qos: "long"
+  busco:
+    cpus: 20
+    mem: "240G"
+    time: "4h"
+    qos: "long"
+  small_bigMem:
+    mem: "30G"

@@ -18,7 +18,7 @@ prediction:
   mode: "split" # Options: split, full
   utr: True
   hint_config: "envs/hint_config.tsv"
-  hint_weights: "envs/extrinsic.M.RM.PB.cfg"
+  hint_weights: "envs/extrinsic.hints_conf.Ale.cfg"
 
 curation:
   mode: "placebo" # Options: ab_initio, placebo, user

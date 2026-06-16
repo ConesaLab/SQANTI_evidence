@@ -1,0 +1,50 @@
+project:
+  genome: "data/danio_rerio/Danio_rerio.GRCz11.dna.toplevel.fa"
+  input: "data/danio_rerio/SRR32588721_cluster.bam"
+  outdir: "results/danio_rerio_SQevi"
+  toolsdir: "/home/patienza/Programs/lr_annotation"
+  log_level: "INFO"
+
+training:
+  lineage: "cyprinodontiformes_odb12"
+  miniprot_threshold: 0.95
+  flanking_region: 1000
+  test_size: 5000
+
+prediction:
+  species: "danio_rerio_SQevi"
+  mode: "split"
+  utr: False
+
+curation:
+  mode: "ab_initio"
+  filter_rules: "data/filter_rules.json"
+
+evaluation:
+  reference_gtf: "data/danio_rerio/Danio_rerio.GRCz11.115.gtf"
+  omark_db: "Metazoa"
+  omark_taxid: 7955
+
+resources:
+  small:
+    cpus: 2
+    mem: "8G"
+    time: "2h"
+    qos: "short"
+  medium:
+    cpus: 8
+    mem: "120G"
+    time: "10h"
+    qos: "short"
+  big:
+    cpus: 10
+    mem: "30G"
+    time: "24h"
+    qos: "long"
+  busco:
+    cpus: 30
+    mem: "60G"
+    time: "240h"
+    qos: "long"
+  small_bigMem:
+    mem: "30G"

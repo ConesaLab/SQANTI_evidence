@@ -2,6 +2,14 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-06-16] - Model Organisms Benchmarking and Configurations
+- **Branch**: `dev-IsoSeq`
+- **Goal**: Prepare configurations and download script for running benchmarking on model organisms.
+- **Summary**:
+    - Added configurations for model organisms under `new_configs/`.
+    - Added `scripts/download_sm_genomes.sh` to download softmasked genomes from Ensembl.
+    - Updated `config.yaml` to point to `envs/extrinsic.hints_conf.Ale.cfg` for hint weights.
+
 ## [2026-06-04] - Revert Transcript Preprocessing to Align-only Mode
 - **Branch**: `dev-IsoSeq`
 - **Goal**: Revert preprocessing pipeline to start directly from alignment, bypass read clustering.

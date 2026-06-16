@@ -1,0 +1,50 @@
+project:
+  genome: "data/sac_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa"
+  input: "data/sac_cerevisiae/SRR11589287_cluster_singletons.bam"
+  outdir: "results/saccharomyces_cerevisiae_SQevi"
+  toolsdir: "/home/patienza/Programs/lr_annotation"
+  log_level: "INFO"
+
+training:
+  lineage: "saccharomycetaceae_odb12"
+  miniprot_threshold: 0.95
+  flanking_region: 1000
+  test_size: 5000
+
+prediction:
+  species: "sac_cerevi_SQevi"
+  mode: "split"
+  utr: False
+
+curation:
+  mode: "placebo"
+  filter_rules: "data/filter_rules.json"
+
+evaluation:
+  reference_gtf: "data/sac_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.115.gff3.cds.gtf"
+  omark_db: "LUCA"
+  omark_taxid: 4932
+
+resources:
+  small:
+    cpus: 2
+    mem: "8G"
+    time: "2h"
+    qos: "short"
+  medium:
+    cpus: 8
+    mem: "120G"
+    time: "10h"
+    qos: "short"
+  big:
+    cpus: 10
+    mem: "30G"
+    time: "24h"
+    qos: "long"
+  busco:
+    cpus: 30
+    mem: "60G"
+    time: "240h"
+    qos: "long"
+  small_bigMem:
+    mem: "30G"

@@ -55,7 +55,7 @@ def validate_and_fill_config(config_dict):
         prd["hint_config"] = os.path.join(envs_dir, "hint_config.tsv")
         
     if not prd.get("hint_weights") or not os.path.isfile(prd.get("hint_weights")):
-        prd["hint_weights"] = os.path.join(envs_dir, "extrinsic.M.RM.PB.cfg")
+        prd["hint_weights"] = os.path.join(envs_dir, "extrinsic.hints_weights_default.cfg")
     
     # 4. curation
     if "curation" not in config_dict:

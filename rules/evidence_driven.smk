@@ -3,7 +3,7 @@ sp_name = config.prediction.species
 
 rule run_sqanti:
     input:
-        isoforms=os.path.join(dir.out.isoseq_collapsed, f"{sample}.collapsed.gff"),
+        isoforms=os.path.join(dir.out.isoquant, f"{sample}.transcript_models.gtf"),
         ref_gff=get_sqanti_gtf(config),
         ref_genome=config.project.genome,
     output:

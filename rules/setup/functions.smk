@@ -76,6 +76,12 @@ def validate_and_fill_config(config_dict):
     eva.setdefault("omark_taxid", 10090)
     eva.setdefault("reference_gtf", "")
     
+    # 7. isoquant
+    if "isoquant" not in config_dict:
+        config_dict["isoquant"] = {}
+    isq = config_dict["isoquant"]
+    isq.setdefault("data_type", "nanopore")
+
     # 6. resources
     if "resources" not in config_dict:
         config_dict["resources"] = {}
@@ -125,7 +131,7 @@ def get_pbmm2_input(filetype, config, sample):
         logger.debug(f"Input is BAM, using direct input: {config.project.input}")
         return config.project.input
     else:
-        result = os.path.join(dir.out.isoseq, f"{sample}.bam")
+        result = os.path.join(dir.out.isoquant, f"{sample}.bam")
         logger.debug(f"Input is not BAM, will use converted file: {result}")
         return result
 
@@ -162,3 +168,15 @@ def check_augustus_species(species):
         return True
     except Exception:
         return True
+
+def get_isoquant_input_flag(reads_path):
+    path_lower = str(reads_path).lower()
+    if path_lower.endswith('.gz'):
+        path_lower = path_lower[:-3]
+        
+    if path_lower.endswith('.bam'):
+        return f"--unmapped_bam {reads_path}"
+    elif any(path_lower.endswith(ext) for ext in ['.fastq', '.fq', '.fasta', '.fa']):
+        return f"--fastq {reads_path}"
+    else:
+        raise ValueError(f"Unknown input format for IsoQuant: {reads_path}")

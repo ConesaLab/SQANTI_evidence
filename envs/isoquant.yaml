@@ -1,0 +1,6 @@
+name: isoquant
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - isoquant

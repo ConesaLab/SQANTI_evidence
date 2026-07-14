@@ -2,6 +2,16 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-07-14] - Integrate IsoQuant with Input Autodetection and Cleanup IsoSeq Traces
+- **Branch**: `dev-IsoQuant`
+- **Goal**: Implement IsoQuant rules and dynamic input flag selection, simplifying directories and functions.
+- **Summary**:
+    - Created `envs/isoquant.yaml` for conda environment.
+    - Updated `rules/setup/directories.smk` to rename and remove old IsoSeq paths, retaining only `isoquant`.
+    - Updated `rules/setup/functions.smk` to add `get_isoquant_input_flag` autodetection helper and default config for `isoquant.data_type`.
+    - Rewrote `rules/transcript_modelling.smk` to only include `run_isoquant`, using autodetection.
+    - Updated `rules/evidence_driven.smk` to take `isoforms` directly from IsoQuant's output.
+
 ## [2026-06-04] - Revert Transcript Preprocessing to Align-only Mode
 - **Branch**: `dev-IsoSeq`
 - **Goal**: Revert preprocessing pipeline to start directly from alignment, bypass read clustering.

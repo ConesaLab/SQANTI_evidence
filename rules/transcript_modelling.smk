@@ -1,51 +1,12 @@
 
-rule fastq2bam:
+rule run_isoquant:
     input:
-        config.project.input
+        reads = config.project.input,
+        ref = config.project.genome,
     output:
-        os.path.join(dir.out.isoseq,f"{sample}.bam")
+        gtf = os.path.join(dir.out.isoquant, f"{sample}.transcript_models.gtf")
     conda:
-        f"{dir.envs}/sqanti3.yaml"
-    params:
-        bam = os.path.join(dir.envs,"pacbio_mock.bam")
-    threads:
-        config.resources.small.cpus
-    resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
-        runtime = config.resources.small.time
-    script:
-        os.path.join(dir.scripts,"fastq2bam.py")
-
-rule index_genome:
-    input:
-        genome = config.project.genome
-    output:
-        os.path.join(dir.tools_index,genome_name,"index.mmi")
-    conda:
-        f"{dir.envs}/isoseq.yaml"
-    threads:
-        config.resources.medium.cpus
-    resources:
-        slurm_extra = f"\'--qos={config.resources.medium.qos}\'",
-        cpus_per_task = config.resources.medium.cpus,
-        mem = config.resources.big.mem,
-        runtime = config.resources.medium.time
-    shell:
-        """
-        mkdir -p {dir.tools_index}
-        pbmm2 index {input.genome} {output}
-        """
-
-rule mapping_reads_pbmm2:
-    input:
-        reads = get_pbmm2_input(filetype,config,sample),
-        index = os.path.join(dir.tools_index,genome_name,"index.mmi")
-    output:
-        os.path.join(dir.out.isoseq_mapping,f"{sample}.mapping_pbmm2.bam"),
-    conda:
-        f"{dir.envs}/isoseq.yaml"
+        f"{dir.envs}/isoquant.yaml"
     threads:
         config.resources.big.cpus
     resources:
@@ -53,32 +14,20 @@ rule mapping_reads_pbmm2:
         slurm_extra = f"\'--qos={config.resources.big.qos}\'",
         mem = config.resources.big.mem,
         runtime = config.resources.big.time
+    params:
+        input_flag = lambda wildcards, input: get_isoquant_input_flag(input.reads),
+        outdir = dir.out.isoquant,
+        data_type = config.isoquant.data_type,
+        prefix = sample
     log:
-        os.path.join(dir.logs,"isoseq_mapping.log")
+        os.path.join(dir.logs, "isoquant.log")
     shell:
         """
-        pbmm2 align --preset ISOSEQ --sort {input.index} {input.reads}  {output} &> {log}
-        """
-
-# TODO: see how to use the FLNC BAM if we decide to use IsoSeq3
-rule collapse_isoforms:
-    input:
-        mapped = os.path.join(dir.out.isoseq_mapping,f"{sample}.mapping_pbmm2.bam"),
-    output:
-        gff = os.path.join(dir.out.isoseq_collapsed,f"{sample}.collapsed.gff"),
-        stats = temp(os.path.join(dir.out.isoseq_collapsed,f"{sample}.collapsed.read_stat.txt"))
-    conda:
-        f"{dir.envs}/isoseq.yaml"
-    log:
-        os.path.join(dir.logs,"isoseq_collapse.log")
-    threads:
-        config.resources.small.cpus
-    resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.medium.mem,
-        runtime = config.resources.small.time
-    shell:
-        """
-        isoseq collapse --do-not-collapse-extra-5exons {input.mapped} {output.gff} -j {threads} &> {log}
+        isoquant.py \
+            --reference {input.ref} \
+            {params.input_flag} \
+            --data_type {params.data_type} \
+            --prefix {params.prefix} \
+            --threads {threads} \
+            -o {params.outdir} &> {log}
         """

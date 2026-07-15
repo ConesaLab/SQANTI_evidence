@@ -4,7 +4,7 @@ rule run_isoquant:
         reads = config.project.input,
         ref = config.project.genome,
     output:
-        gtf = os.path.join(dir.out.isoquant, f"{sample}.transcript_models.gtf")
+        gtf = os.path.join(dir.out.isoquant,sample, f"{sample}.transcript_models.gtf")
     conda:
         f"{dir.envs}/isoquant.yaml"
     threads:
@@ -17,13 +17,13 @@ rule run_isoquant:
     params:
         input_flag = lambda wildcards, input: get_isoquant_input_flag(input.reads),
         outdir = dir.out.isoquant,
-        data_type = config.isoquant.data_type,
+        data_type = config.curation.data_type,
         prefix = sample
     log:
         os.path.join(dir.logs, "isoquant.log")
     shell:
         """
-        isoquant.py \
+        isoquant \
             --reference {input.ref} \
             {params.input_flag} \
             --data_type {params.data_type} \

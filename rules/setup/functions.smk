@@ -53,15 +53,15 @@ def validate_and_fill_config(config_dict):
 
     if not prd.get("hint_config") or not os.path.isfile(prd.get("hint_config")):
         prd["hint_config"] = os.path.join(envs_dir, "hint_config.tsv")
-        
+
     if not prd.get("hint_weights") or not os.path.isfile(prd.get("hint_weights")):
         prd["hint_weights"] = os.path.join(envs_dir, "extrinsic.hints_weights_default.cfg")
-    
+
     # 4. curation
     if "curation" not in config_dict:
         config_dict["curation"] = {}
     cur = config_dict["curation"]
-
+    cur.setdefault("data_type","pacbio")
     if not cur.get("filter_rules") or not os.path.isfile(cur.get("filter_rules")):
         cur["filter_rules"] = os.path.join(envs_dir, "filter_rules.json")
         
@@ -75,13 +75,7 @@ def validate_and_fill_config(config_dict):
     eva.setdefault("omark_db", "LUCA")
     eva.setdefault("omark_taxid", 10090)
     eva.setdefault("reference_gtf", "")
-    
-    # 7. isoquant
-    if "isoquant" not in config_dict:
-        config_dict["isoquant"] = {}
-    isq = config_dict["isoquant"]
-    isq.setdefault("data_type", "nanopore")
-
+ 
     # 6. resources
     if "resources" not in config_dict:
         config_dict["resources"] = {}

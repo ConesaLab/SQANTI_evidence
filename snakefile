@@ -16,6 +16,7 @@ include: os.path.join("rules","setup","installations.smk")
 include: os.path.join("rules","setup","logging_setup.smk")
 
 sample,filetype = get_sample_name(str(config.project.input))
+sample_qc = sample.replace('.', '-')
 genome_name = get_genome_name(str(config.project.genome))
 
 # Snakemake hooks for logging
@@ -79,5 +80,5 @@ rule all:
     input:
         os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff"),
         os.path.join(dir.out.qc_gaqet2,f"{sample}_GAQET.plot.png"),
-        os.path.join(dir.out.qc_gffcompare, f"{sample}.stats") if config.evaluation.reference_gtf and os.path.isfile(config.evaluation.reference_gtf) else [],
-        os.path.join(dir.out.qc_gffcompare, f"{sample}_cds.stats") if config.evaluation.reference_gtf and os.path.isfile(config.evaluation.reference_gtf) else []
+        os.path.join(dir.out.qc_gffcompare, f"{sample_qc}.stats") if config.evaluation.reference_gtf and os.path.isfile(config.evaluation.reference_gtf) else [],
+        os.path.join(dir.out.qc_gffcompare, f"{sample_qc}_cds.stats") if config.evaluation.reference_gtf and os.path.isfile(config.evaluation.reference_gtf) else []

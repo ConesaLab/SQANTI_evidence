@@ -1,3 +1,5 @@
+sample_qc = sample.replace('.', '-')
+
 localrules: gaqet2_setup
 
 rule agat_cleaning:
@@ -88,9 +90,9 @@ rule gffcompare_eval:
         ref = config.evaluation.reference_gtf,
         anno = os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff")
     output:
-        stats = os.path.join(dir.out.qc_gffcompare, f"{sample}.stats") 
+        stats = os.path.join(dir.out.qc_gffcompare, f"{sample_qc}.stats") 
     params:
-        out_prefix = os.path.join(dir.out.qc_gffcompare, f"{sample}")
+        out_prefix = os.path.join(dir.out.qc_gffcompare, f"{sample_qc}")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
@@ -142,9 +144,9 @@ rule gffcompare_cds_eval:
         ref = os.path.join(dir.out.qc_gffcompare, "reference.cds.gtf"),
         anno = os.path.join(dir.out.qc_gffcompare, f"{sample}.cds.gtf")
     output:
-        stats = os.path.join(dir.out.qc_gffcompare, f"{sample}_cds.stats")
+        stats = os.path.join(dir.out.qc_gffcompare, f"{sample_qc}_cds.stats")
     params:
-        out_prefix = os.path.join(dir.out.qc_gffcompare, f"{sample}_cds")
+        out_prefix = os.path.join(dir.out.qc_gffcompare, f"{sample_qc}_cds")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,

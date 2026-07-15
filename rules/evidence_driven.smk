@@ -3,7 +3,7 @@ sp_name = config.prediction.species
 
 rule run_sqanti:
     input:
-        isoforms=os.path.join(dir.out.isoquant, f"{sample}.transcript_models.gtf"),
+        isoforms=os.path.join(dir.out.isoquant, sample, f"{sample}.transcript_models.gtf"),
         ref_gff=get_sqanti_gtf(config),
         ref_genome=config.project.genome,
     output:
@@ -21,12 +21,13 @@ rule run_sqanti:
         runtime=config.resources.medium.time,
     params:
         sp_name=sp_name,
+        fl_matrix=os.path.join(dir.out.isoquant, sample, f"{sample}.discovered_transcript_counts.tsv"),
     shell:
         #TODO: Eliminate this for the final release, as it is only used in Garnatxa
         """
         #export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
         sqanti3_qc.py --isoforms {input.isoforms} --refGTF {input.ref_gff} --refFasta {input.ref_genome} \
-            --dir {dir.out.ed_sqanti} --output {params.sp_name} -t {threads} --include_ORF --report skip &> {log}
+            --dir {dir.out.ed_sqanti} --output {params.sp_name} -t {threads} --include_ORF -fl {params.fl_matrix} --report skip &> {log}
         mv {dir.out.ed_sqanti}/{params.sp_name}_corrected.cds.gff3 {output.gtf}
         """
 

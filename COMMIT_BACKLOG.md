@@ -2,6 +2,14 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-07-15] - Resolve GffCompare Dot Suffix Output Naming Bug
+- **Branch**: `dev-GffCompareFix`
+- **Goal**: Prevent missing stats file errors during evaluation when a sample name contains dots.
+- **Summary**:
+    - Defined `sample_qc = sample.replace('.', '-')` in both `rules/quality_control.smk` and `snakefile` to safely isolate name formatting.
+    - Updated `gffcompare_eval` and `gffcompare_cds_eval` to use `sample_qc` for output paths and `-o` prefix arguments.
+    - Updated target outputs in `rule all` to check for `sample_qc` based stats files.
+
 ## [2026-07-14] - Integrate IsoQuant with Input Autodetection and Cleanup IsoSeq Traces
 - **Branch**: `dev-IsoQuant`
 - **Goal**: Implement IsoQuant rules and dynamic input flag selection, simplifying directories and functions.

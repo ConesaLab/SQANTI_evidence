@@ -1,3 +1,5 @@
+sp_name = config.prediction.species
+
 
 rule run_isoquant:
     input:
@@ -30,4 +32,60 @@ rule run_isoquant:
             --prefix {params.prefix} \
             --threads {threads} \
             -o {params.outdir} &> {log}
+        """
+
+rule run_sqanti:
+    input:
+        isoforms=os.path.join(dir.out.isoquant, sample, f"{sample}.transcript_models.gtf"),
+        ref_gff=get_sqanti_gtf(config),
+        ref_genome=config.project.genome,
+    output:
+        classification=os.path.join(dir.out.ed_sqanti, f"{sp_name}_classification.txt"),
+        gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}_corrected.cds.gtf"),
+    log:
+        os.path.join(dir.logs, "run_sqanti.log"),
+    conda:
+        f"{dir.envs}/sqanti3.yaml"
+    threads: config.resources.medium.cpus
+    resources:
+        slurm_extra=f"'--qos={config.resources.medium.qos}'",
+        cpus_per_task=config.resources.medium.cpus,
+        mem=config.resources.big.mem,
+        runtime=config.resources.medium.time,
+    params:
+        sp_name=sp_name,
+        fl_matrix=os.path.join(dir.out.isoquant, sample, f"{sample}.discovered_transcript_counts.tsv"),
+    shell:
+        """
+        sqanti3_qc.py --isoforms {input.isoforms} --refGTF {input.ref_gff} --refFasta {input.ref_genome} \
+            --dir {dir.out.ed_sqanti} --output {params.sp_name} -t {threads} --include_ORF -fl {params.fl_matrix} --report skip &> {log}
+        mv {dir.out.ed_sqanti}/{params.sp_name}_corrected.cds.gff3 {output.gtf}
+        """
+
+
+rule filter_isoforms:
+    input:
+        classification=os.path.join(dir.out.ed_sqanti, f"{sp_name}_classification.txt"),
+        gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}_corrected.cds.gtf"),
+    output:
+        gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
+    log:
+        os.path.join(dir.logs, "filter_sqanti.log"),
+    conda:
+        os.path.join(dir.envs, "sqanti3.yaml")
+    threads: config.resources.small.cpus
+    resources:
+        slurm_extra=f"'--qos={config.resources.small.qos}'",
+        cpus_per_task=config.resources.small.cpus,
+        mem=config.resources.small.mem,
+        runtime=config.resources.small.time,
+    params:
+        json_rules=config.curation.filter_rules,
+        sp_name=sp_name,
+    shell:
+        """
+        #export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
+        sqanti3_filter.py rules --sqanti_class {input.classification} --filter_gtf {input.gtf} \
+            -j {params.json_rules} --dir {dir.out.ed_sqanti} --skip_report \
+            --output {params.sp_name} &> {log}
         """

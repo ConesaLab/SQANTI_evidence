@@ -147,10 +147,37 @@ rule filter_busco_sqanti_overlaps:
         os.path.join(dir.scripts, "filter_busco_overlaps.py")
 
 
+def get_cluster_faa_inputs(wildcards):
+    mode = config.training.mode
+    if mode == "sqanti_only":
+        return [os.path.join(dir.out.ab_augustus_model, "sqanti_dominant.faa")]
+    elif mode == "busco_only":
+        return [os.path.join(dir.out.ab_augustus_model, "busco_genes.faa")]
+    else:  # mixed
+        return [
+            os.path.join(dir.out.ab_augustus_model, "sqanti_dominant.faa"),
+            os.path.join(dir.out.ab_augustus_model, "busco_non_overlapping.faa"),
+        ]
+
+
+def get_assemble_gff_inputs(wildcards):
+    mode = config.training.mode
+    inputs = {
+        "cdhit_lst": os.path.join(dir.out.ab_augustus_model, "cdhit.lst"),
+    }
+    if mode in ["mixed", "sqanti_only"]:
+        inputs["sqanti_gff"] = os.path.join(dir.out.ab_augustus_model, "sqanti_dominant.gff")
+    if mode in ["mixed", "busco_only"]:
+        inputs["busco_gff"] = os.path.join(
+            dir.out.ab_augustus_model,
+            "busco_non_overlapping.gff" if mode == "mixed" else "busco_genes.filtered.gff",
+        )
+    return inputs
+
+
 rule cluster_training_proteins:
     input:
-        sqanti_faa=os.path.join(dir.out.ab_augustus_model, "sqanti_dominant.faa"),
-        busco_faa=os.path.join(dir.out.ab_augustus_model, "busco_non_overlapping.faa"),
+        get_cluster_faa_inputs,
     output:
         combined_faa=os.path.join(dir.out.ab_augustus_model, "training_proteins.faa"),
         cdhit_lst=os.path.join(dir.out.ab_augustus_model, "cdhit.lst"),
@@ -166,7 +193,7 @@ rule cluster_training_proteins:
         runtime=config.resources.small.time,
     shell:
         """
-        cat {input.sqanti_faa} {input.busco_faa} > {output.combined_faa}
+        cat {input} > {output.combined_faa}
         dir=$(dirname {output.cdhit_lst})
         cd-hit -i {output.combined_faa} -o $dir/training_proteins.cdhit \
                -c 0.8 -p 1 -d 0 -T {threads} -M 48000 &> {log}
@@ -176,9 +203,7 @@ rule cluster_training_proteins:
 
 rule assemble_training_gff:
     input:
-        cdhit_lst=os.path.join(dir.out.ab_augustus_model, "cdhit.lst"),
-        sqanti_gff=os.path.join(dir.out.ab_augustus_model, "sqanti_dominant.gff"),
-        busco_gff=os.path.join(dir.out.ab_augustus_model, "busco_non_overlapping.gff"),
+        unpack(get_assemble_gff_inputs),
     output:
         training_gff=os.path.join(dir.out.ab_augustus_model, "training_genes.gff"),
     log:
@@ -192,7 +217,7 @@ rule assemble_training_gff:
         runtime=config.resources.small.time,
     params:
         max_genes=config.training.test_size,
-        strategy="busco_core",
+        strategy=lambda wildcards: "busco_core" if config.training.mode == "mixed" else config.training.mode,
     script:
         os.path.join(dir.scripts, "assemble_training_gff.py")
 

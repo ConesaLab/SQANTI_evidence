@@ -47,6 +47,29 @@ def test_assemble_training_genes_busco_core():
     assert s_sel == []
 
 
+def test_assemble_training_genes_busco_and_sqanti_only():
+    """Test dedicated single-mode strategies (busco_only and sqanti_only)."""
+    cdhit_ids = {"busco1", "busco2", "sq1", "sq2", "sq3"}
+    busco_order = ["busco1", "busco2"]
+    busco_dict = {"busco1": ["b1_line"], "busco2": ["b2_line"]}
+    sqanti_order = ["sq1", "sq2", "sq3"]
+    sqanti_dict = {"sq1": ["s1_line"], "sq2": ["s2_line"], "sq3": ["s3_line"]}
+
+    # busco_only
+    b_sel, s_sel = atg.assemble_training_genes(
+        cdhit_ids, busco_order, busco_dict, sqanti_order, sqanti_dict, max_genes=5000, strategy="busco_only"
+    )
+    assert b_sel == ["busco1", "busco2"]
+    assert s_sel == []
+
+    # sqanti_only
+    b_sel, s_sel = atg.assemble_training_genes(
+        cdhit_ids, busco_order, busco_dict, sqanti_order, sqanti_dict, max_genes=5000, strategy="sqanti_only"
+    )
+    assert b_sel == []
+    assert s_sel == ["sq1", "sq2", "sq3"]
+
+
 def test_assemble_training_genes_alternative_strategies():
     """Test future fallback strategies (sqanti_priority and proportional)."""
     cdhit_ids = {"busco1", "busco2", "sq1", "sq2", "sq3"}

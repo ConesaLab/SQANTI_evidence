@@ -103,7 +103,13 @@ def assemble_training_genes(
     selected_busco = []
     selected_sqanti = []
 
-    if strategy == "busco_core":
+    if strategy in ["busco_only"]:
+        selected_busco = valid_busco_reps[:max_genes]
+
+    elif strategy in ["sqanti_only"]:
+        selected_sqanti = valid_sqanti_reps[:max_genes]
+
+    elif strategy == "busco_core":
         # 1. Take all available BUSCO representatives
         selected_busco = valid_busco_reps[:max_genes]
 
@@ -137,8 +143,6 @@ def assemble_training_genes(
 
 def main():
     cdhit_lst_file = snakemake.input.cdhit_lst
-    sqanti_gff_file = snakemake.input.sqanti_gff
-    busco_gff_file = snakemake.input.busco_gff
     output_gff_file = snakemake.output.training_gff
 
     max_genes = int(getattr(snakemake.params, "max_genes", 5000))
@@ -150,11 +154,19 @@ def main():
     sys.stderr.write(f"### Reading CD-HIT list from: [{cdhit_lst_file}]\n")
     cdhit_ids = parse_cdhit_list(cdhit_lst_file)
 
-    sys.stderr.write(f"### Reading BUSCO GFF from: [{busco_gff_file}]\n")
-    busco_order, busco_dict = parse_gff_by_gene(busco_gff_file)
+    # Read BUSCO GFF if provided
+    busco_order, busco_dict = [], {}
+    busco_gff_file = getattr(snakemake.input, "busco_gff", None)
+    if busco_gff_file and os.path.exists(busco_gff_file):
+        sys.stderr.write(f"### Reading BUSCO GFF from: [{busco_gff_file}]\n")
+        busco_order, busco_dict = parse_gff_by_gene(busco_gff_file)
 
-    sys.stderr.write(f"### Reading SQANTI GFF from: [{sqanti_gff_file}]\n")
-    sqanti_order, sqanti_dict = parse_gff_by_gene(sqanti_gff_file)
+    # Read SQANTI GFF if provided
+    sqanti_order, sqanti_dict = [], {}
+    sqanti_gff_file = getattr(snakemake.input, "sqanti_gff", None)
+    if sqanti_gff_file and os.path.exists(sqanti_gff_file):
+        sys.stderr.write(f"### Reading SQANTI GFF from: [{sqanti_gff_file}]\n")
+        sqanti_order, sqanti_dict = parse_gff_by_gene(sqanti_gff_file)
 
     selected_busco, selected_sqanti = assemble_training_genes(
         cdhit_ids,

@@ -26,8 +26,15 @@ def validate_and_fill_config(config_dict):
     if "training" not in config_dict:
         config_dict["training"] = {}
     trn = config_dict["training"]
-    if not trn.get("lineage"):
-        raise ValueError("ERROR: 'training.lineage' (BUSCO lineage) is required.")
+    trn.setdefault("mode", "mixed")
+    if trn["mode"] not in ["mixed", "busco_only", "sqanti_only"]:
+        raise ValueError("ERROR: 'training.mode' must be one of 'mixed', 'busco_only', or 'sqanti_only'.")
+
+    if trn["mode"] in ["mixed", "busco_only"]:
+        if not trn.get("lineage"):
+            raise ValueError("ERROR: 'training.lineage' (BUSCO lineage) is required when training.mode is 'mixed' or 'busco_only'.")
+    else:
+        trn.setdefault("lineage", "none")
     
     trn.setdefault("skip", False)
     trn.setdefault("miniprot_threshold", 0.95)

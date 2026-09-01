@@ -69,6 +69,7 @@ rule filter_isoforms:
         gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}_corrected.cds.gtf"),
     output:
         gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
+        classif=os.path.join(dir.out.ed_sqanti, f"{sp_name}_RulesFilter_classification.txt")
     log:
         os.path.join(dir.logs, "filter_sqanti.log"),
     conda:

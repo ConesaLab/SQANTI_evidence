@@ -136,7 +136,8 @@ rule run_tsebra:
         runtime=config.resources.small.time,
     shell:
         """
-        tsebra.py -g {input.sqanti_gtf},{input.augustus_gff} \
+        tsebra.py -g {input.augustus_gff} \
+                  -k {input.sqanti_gtf} \
                   -e {input.hints} \
                   -c {input.cfg} \
                   -o {output.tsebra_gtf} &> {log}

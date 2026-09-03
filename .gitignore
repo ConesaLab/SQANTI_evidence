@@ -4,11 +4,12 @@ test/
 hints_trial
 genomes_benchmark/
 
-scripts/__pycache__
+**/__pycache__/
+*.pyc
+.pytest_cache/
 
 # Gemini-specific files
 GEMINI.md
 LEARNINGS.gemini.md
 docs/
 GIT_HISTORY.txt
-scripts/__pycache__/input_check.cpython-312.pyc

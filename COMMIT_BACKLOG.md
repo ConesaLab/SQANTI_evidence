@@ -2,6 +2,17 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-03] - Integrate Snakemake-Native Hierarchical Tier Resolver
+- **Branch**: `dev-IsoQuant`
+- **Commit**: `7c678b7`
+- **Goal**: Replace TSEBRA with native Snakemake hierarchical tier resolution (Tier 1 SQANTI pass-through + Tier 2 Augustus gap-filling), eliminating duplicate transcripts and precision collapse.
+- **Summary**:
+    - Created `scripts/resolve_transcript_tiers.py` supporting both Snakemake's native `script:` directive and standalone CLI execution.
+    - Replaced `rule run_tsebra` in `rules/evidence_driven.smk` with `rule resolve_transcript_tiers`.
+    - Updated `rules/quality_control.smk` to connect `resolved_prediction.gtf` to `agat_cleaning` and `gaqet2_setup`.
+    - Added comprehensive unit tests in `tests/test_resolve_transcript_tiers.py` verifying Tier 1 preservation, overlapping Augustus discard, gap-filler retention, and monoexon noise filtering.
+    - Updated `.gitignore` to ignore Python and Pytest caches.
+
 ## [2026-09-03] - Integrate TSEBRA Ensembling & Miniprot Paralog Recovery
 - **Branch**: `dev-IsoQuant`
 - **Goal**: Implement TSEBRA transcript selection to preserve curated SQANTI3 models without Augustus mutation, and Miniprot self-protein hinting for unexpressed paralog recovery.

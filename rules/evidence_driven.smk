@@ -117,28 +117,25 @@ else:
             """
 
 
-rule run_tsebra:
+rule resolve_transcript_tiers:
     input:
         sqanti_gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
         augustus_gff=os.path.join(dir.out.ed_augustus, "Augustus_prediction.gff"),
         hints=os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff"),
-        cfg=config.prediction.tsebra_config,
     output:
-        tsebra_gtf=os.path.join(dir.out.ed_augustus, "tsebra_prediction.gtf"),
+        resolved_gtf=os.path.join(dir.out.ed_augustus, "resolved_prediction.gtf"),
     log:
-        os.path.join(dir.logs, "run_tsebra.log"),
+        os.path.join(dir.logs, "resolve_transcript_tiers.log"),
     conda:
-        os.path.join(dir.envs, "tsebra.yaml")
+        os.path.join(dir.envs, "basic.yaml")
     resources:
         slurm_extra=f"'--qos={config.resources.small.qos}'",
         cpus_per_task=config.resources.small.cpus,
         mem=config.resources.small.mem,
         runtime=config.resources.small.time,
-    shell:
-        """
-        tsebra.py -g {input.augustus_gff} \
-                  -k {input.sqanti_gtf} \
-                  -e {input.hints} \
-                  -c {input.cfg} \
-                  -o {output.tsebra_gtf} &> {log}
-        """
+    params:
+        min_monoexon_len=300,
+        filter_mode=config.prediction.filter_mode if "filter_mode" in config.prediction else "medium",
+    script:
+        os.path.join(dir.scripts, "resolve_transcript_tiers.py")
+

@@ -117,23 +117,27 @@ else:
             """
 
 
-rule filter_monoexons:
+rule run_tsebra:
     input:
-        gff=os.path.join(dir.out.ed_augustus, "Augustus_prediction.gff"),
+        sqanti_gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
+        augustus_gff=os.path.join(dir.out.ed_augustus, "Augustus_prediction.gff"),
         hints=os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff"),
+        cfg=config.prediction.tsebra_config,
     output:
-        gff=os.path.join(dir.out.ed_augustus, "Augustus_prediction.filtered.gff"),
+        tsebra_gtf=os.path.join(dir.out.ed_augustus, "tsebra_prediction.gtf"),
     log:
-        os.path.join(dir.logs, "filter_monoexons.log"),
+        os.path.join(dir.logs, "run_tsebra.log"),
     conda:
-        os.path.join(dir.envs, "busco.yaml")
-    threads: config.resources.small.cpus
+        os.path.join(dir.envs, "tsebra.yaml")
     resources:
         slurm_extra=f"'--qos={config.resources.small.qos}'",
         cpus_per_task=config.resources.small.cpus,
         mem=config.resources.small.mem,
         runtime=config.resources.small.time,
-    params:
-        filter_mode=config.prediction.filter_mode,
-    script:
-        os.path.join(dir.scripts, "filter_monoexons.py")
+    shell:
+        """
+        tsebra.py -g {input.sqanti_gtf},{input.augustus_gff} \
+                  -e {input.hints} \
+                  -c {input.cfg} \
+                  -o {output.tsebra_gtf} &> {log}
+        """

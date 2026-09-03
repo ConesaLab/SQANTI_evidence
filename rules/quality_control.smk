@@ -4,9 +4,9 @@ localrules: gaqet2_setup
 
 rule agat_cleaning:
     input:
-        os.path.join(dir.out.ed_augustus,"Augustus_prediction.filtered.gff")
+        os.path.join(dir.out.ed_augustus, "tsebra_prediction.gtf")
     output:
-        os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff")
+        os.path.join(dir.out.evidence_driven, "Final_clean_prediction.gff")
     resources:
         slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
@@ -25,7 +25,7 @@ rule agat_cleaning:
 rule gaqet2_setup:
     input:
         genome = config.project.prediction_genome,
-        annotation = os.path.join(dir.out.ed_augustus,"Augustus_prediction.filtered.gff"),
+        annotation = os.path.join(dir.out.ed_augustus, "tsebra_prediction.gtf"),
     output:
         os.path.join(dir.out.qc_gaqet2,"gaqet2_config.yaml")
     conda:

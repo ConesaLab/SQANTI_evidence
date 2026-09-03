@@ -64,6 +64,9 @@ def validate_and_fill_config(config_dict):
     if not prd.get("hint_weights") or not os.path.isfile(prd.get("hint_weights")):
         prd["hint_weights"] = os.path.join(envs_dir, "extrinsic.hints_weights_default.cfg")
 
+    if not prd.get("tsebra_config") or not os.path.isfile(prd.get("tsebra_config")):
+        prd["tsebra_config"] = os.path.join(envs_dir, "tsebra.cfg")
+
     # 4. curation
     if "curation" not in config_dict:
         config_dict["curation"] = {}

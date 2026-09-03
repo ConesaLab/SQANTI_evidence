@@ -20,6 +20,7 @@ prediction:
   utr: True
   hint_config: "envs/hint_config.tsv"
   hint_weights: "envs/extrinsic.hints_conf.Ale.cfg"
+  tsebra_config: "envs/tsebra.cfg"
 
 curation:
   mode: "placebo" # Options: ab_initio, placebo, user

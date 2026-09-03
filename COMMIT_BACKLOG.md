@@ -2,6 +2,18 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-03] - Integrate TSEBRA Ensembling & Miniprot Paralog Recovery
+- **Branch**: `dev-IsoQuant`
+- **Goal**: Implement TSEBRA transcript selection to preserve curated SQANTI3 models without Augustus mutation, and Miniprot self-protein hinting for unexpressed paralog recovery.
+- **Summary**:
+    - Created `envs/tsebra.yaml` and `envs/tsebra.cfg` for automated transcript arbitration.
+    - Implemented `rule run_tsebra` in `rules/evidence_driven.smk` combining SQANTI3 curated GTF, Augustus predictions, and unified hints.
+    - Updated `rules/quality_control.smk` to feed `tsebra_prediction.gtf` directly into `agat_cleaning` and `gaqet2_setup`.
+    - Implemented `scripts/miniprot_to_hints.py` to convert spliced protein alignments into `src=P` Augustus hints (with frame phase 0, 1, 2).
+    - Added `align_proteins_miniprot`, `convert_miniprot_hints`, and `combine_evidence_hints` in `rules/evidence_driven.smk`.
+    - Added source `P` and weights across all `envs/extrinsic*.cfg` files.
+    - Added comprehensive unit tests in `tests/test_miniprot_to_hints.py`.
+
 ## [2026-07-15] - Resolve GffCompare Dot Suffix Output Naming Bug
 - **Branch**: `dev-GffCompareFix`
 - **Goal**: Prevent missing stats file errors during evaluation when a sample name contains dots.

@@ -1,0 +1,7 @@
+name: tsebra
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - tsebra>=1.1.2

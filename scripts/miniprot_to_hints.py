@@ -123,7 +123,7 @@ def write_augustus_protein_hints(alignments: list, out_hints_path: str, src: str
 
             # 1. CDSpart hints
             for start, end, phase in cds_list:
-                out_f.write(f"{chrom}\tminiprot\tCDSpart\t{start}\t{end}\t.\t{strand}\t{phase}\t{hint_attr}\n")
+                out_f.write(f"{chrom}\tminiprot\tCDSpart\t{start}\t{end}\t0\t{strand}\t{phase}\t{hint_attr}\n")
                 count_cds += 1
 
             # 2. Intron hints
@@ -131,19 +131,19 @@ def write_augustus_protein_hints(alignments: list, out_hints_path: str, src: str
                 intron_start = cds_list[i][1] + 1
                 intron_end = cds_list[i + 1][0] - 1
                 if intron_start <= intron_end:
-                    out_f.write(f"{chrom}\tminiprot\tintron\t{intron_start}\t{intron_end}\t.\t{strand}\t.\t{hint_attr}\n")
+                    out_f.write(f"{chrom}\tminiprot\tintron\t{intron_start}\t{intron_end}\t0\t{strand}\t.\t{hint_attr}\n")
                     count_intron += 1
 
             # 3. Start and Stop hints
             first_start = cds_list[0][0]
             last_end = cds_list[-1][1]
             if strand == "+":
-                out_f.write(f"{chrom}\tminiprot\tstart\t{first_start}\t{first_start+2}\t.\t+\t0\t{term_attr}\n")
-                out_f.write(f"{chrom}\tminiprot\tstop\t{last_end-2}\t{last_end}\t.\t+\t0\t{term_attr}\n")
+                out_f.write(f"{chrom}\tminiprot\tstart\t{first_start}\t{first_start+2}\t0\t+\t0\t{term_attr}\n")
+                out_f.write(f"{chrom}\tminiprot\tstop\t{last_end-2}\t{last_end}\t0\t+\t0\t{term_attr}\n")
                 count_start_stop += 2
             elif strand == "-":
-                out_f.write(f"{chrom}\tminiprot\tstart\t{last_end-2}\t{last_end}\t.\t-\t0\t{term_attr}\n")
-                out_f.write(f"{chrom}\tminiprot\tstop\t{first_start}\t{first_start+2}\t.\t-\t0\t{term_attr}\n")
+                out_f.write(f"{chrom}\tminiprot\tstart\t{last_end-2}\t{last_end}\t0\t-\t0\t{term_attr}\n")
+                out_f.write(f"{chrom}\tminiprot\tstop\t{first_start}\t{first_start+2}\t0\t-\t0\t{term_attr}\n")
                 count_start_stop += 2
 
     sys.stderr.write(f"### Converted {len(alignments)} Miniprot alignments into Augustus protein hints ({out_hints_path}):\n")

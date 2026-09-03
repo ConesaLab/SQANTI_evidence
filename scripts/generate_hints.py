@@ -21,9 +21,9 @@ def process_transcript(t_id, chrom, strand, exons, cds, out_file, cds_dict, conf
     if config.get('exon', False) or config.get('exonpart', False):
         for i, (ex_start, ex_end) in enumerate(exons):
             if config.get('exonpart', False) and (i == 0 or i == len(exons) - 1):
-                out_file.write(f"{chrom}\tHints\texonpart\t{ex_start}\t{ex_end}\t.\t{strand}\t.\t{hint_attrs}\n")
+                out_file.write(f"{chrom}\tHints\texonpart\t{ex_start}\t{ex_end}\t0\t{strand}\t.\t{hint_attrs}\n")
             elif config.get('exon', False):
-                out_file.write(f"{chrom}\tHints\texon\t{ex_start}\t{ex_end}\t.\t{strand}\t.\t{hint_attrs}\n")
+                out_file.write(f"{chrom}\tHints\texon\t{ex_start}\t{ex_end}\t0\t{strand}\t.\t{hint_attrs}\n")
         
     # 2. Intron hints
     if config.get('intron', False):
@@ -36,12 +36,12 @@ def process_transcript(t_id, chrom, strand, exons, cds, out_file, cds_dict, conf
             intron_end = exons[i+1][0] - 1
             if intron_start <= intron_end:
                 if extract_all_introns:
-                    out_file.write(f"{chrom}\tHints\tintron\t{intron_start}\t{intron_end}\t.\t{strand}\t.\t{hint_attrs}\n")
+                    out_file.write(f"{chrom}\tHints\tintron\t{intron_start}\t{intron_end}\t0\t{strand}\t.\t{hint_attrs}\n")
                 else:
                     # Introns can only be within the CDS range of each transcript
                     if min_cds is not None and max_cds is not None:
                         if intron_start >= min_cds and intron_end <= max_cds:
-                            out_file.write(f"{chrom}\tHints\tintron\t{intron_start}\t{intron_end}\t.\t{strand}\t.\t{hint_attrs}\n")
+                            out_file.write(f"{chrom}\tHints\tintron\t{intron_start}\t{intron_end}\t0\t{strand}\t.\t{hint_attrs}\n")
             
     # 3. CDS hints
     if cds and config.get('CDS', False):
@@ -57,7 +57,7 @@ def process_transcript(t_id, chrom, strand, exons, cds, out_file, cds_dict, conf
                 if (i == len(cds) - 1 and not has_start) or (i == 0 and not has_stop):
                     h_type = "CDSpart"
             
-            out_file.write(f"{chrom}\tHints\t{h_type}\t{c_start}\t{c_end}\t.\t{strand}\t.\t{hint_attrs}\n")
+            out_file.write(f"{chrom}\tHints\t{h_type}\t{c_start}\t{c_end}\t0\t{strand}\t.\t{hint_attrs}\n")
 
     # 4. Start and Stop hints
     if cds:
@@ -66,14 +66,14 @@ def process_transcript(t_id, chrom, strand, exons, cds, out_file, cds_dict, conf
         
         if strand == '+':
             if has_start and config.get('start', False):
-                out_file.write(f"{chrom}\tHints\tstart\t{min_cds}\t{min_cds+2}\t.\t+\t0\t{hint_attrs}\n")
+                out_file.write(f"{chrom}\tHints\tstart\t{min_cds}\t{min_cds+2}\t0\t+\t0\t{hint_attrs}\n")
             if has_stop and config.get('stop', False):
-                out_file.write(f"{chrom}\tHints\tstop\t{max_cds-2}\t{max_cds}\t.\t+\t0\t{hint_attrs}\n")
+                out_file.write(f"{chrom}\tHints\tstop\t{max_cds-2}\t{max_cds}\t0\t+\t0\t{hint_attrs}\n")
         elif strand == '-':
             if has_start and config.get('start', False):
-                out_file.write(f"{chrom}\tHints\tstart\t{max_cds-2}\t{max_cds}\t.\t-\t0\t{hint_attrs}\n")
+                out_file.write(f"{chrom}\tHints\tstart\t{max_cds-2}\t{max_cds}\t0\t-\t0\t{hint_attrs}\n")
             if has_stop and config.get('stop', False):
-                out_file.write(f"{chrom}\tHints\tstop\t{min_cds}\t{min_cds+2}\t.\t-\t0\t{hint_attrs}\n")
+                out_file.write(f"{chrom}\tHints\tstop\t{min_cds}\t{min_cds+2}\t0\t-\t0\t{hint_attrs}\n")
 
 def main():
     gff_file = snakemake.input.gtf

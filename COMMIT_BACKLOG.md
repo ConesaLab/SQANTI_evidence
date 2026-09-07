@@ -2,6 +2,16 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-07] - BUSCO Gene Ids Unified (mixed training now really mixed) and Deterministic Augustus Training (roadmap 1.7b, 1.4)
+- **Branch**: `dev-IsoQuant`
+- **Goal**: Make BUSCO genes actually reach the training set, and make `etraining` reproducible from an identical training set.
+- **Summary**:
+    - Diagnosis: BUSCO's miniprot GFF keys records by `ID=MP######`/`Parent=MP######`, while `busco_complete_aa.py` names proteins by BUSCO id (`10052at3699`), which is the prefix of the GFF `Target=` attribute. `filter_busco_overlaps.py` and `assemble_training_gff.py` keyed genes by the MP id, so the FAA subset was always empty (0 of 727 on Arabidopsis) and no BUSCO gene ever matched a CD-HIT representative: every `mixed` run trained on SQANTI genes only, and `busco_only` would have produced an empty training set through the same path.
+    - Fix: both scripts derive the gene key from `Target=` (`busco_gene_key`), keep an ID→key map so Parent-only children (`stop_codon`) follow their mRNA (`resolve_gene_key`), and fall back to `gene_id`/`ID=`/`Parent=` for other GFFs. `filter_and_write_faa` raises if retained genes exist but no FAA sequence matches. Real-data check: 3,199 BUSCO genes parsed, 727 retained, 727 sequences written.
+    - 1.4 follow-up: `export PERL_HASH_SEED=0 PERL_PERTURB_KEYS=0` before `gff2gbSmallDNA.pl`, `new_species.pl`, `filterGenes.pl`. Perl's per-process hash randomisation swapped 9 of 4,696 GenBank loci between two runs of the same training set on Arabidopsis and changed the `.pbl` model files in the 3rd decimal.
+    - Tests: +4 (real-shaped ids through filter and assembly, Parent-only children, GFF/FAA mismatch error); 52 total.
+    - Consequence: the next `mixed` run will be the first with BUSCO genes in the training set (≈727 + SQANTI up to `test_size`); the trained model will differ from all previous runs.
+
 ## [2026-09-07] - Miniprot Paralog Recovery Becomes the Default
 - **Branch**: `dev-IsoQuant`
 - **Goal**: Adopt the validated Miniprot settings as the pipeline default (roadmap 1.8 / 1.6 validation).

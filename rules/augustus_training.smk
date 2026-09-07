@@ -242,6 +242,10 @@ rule gff2genbank:
         flanking_region=config.training.flanking_region,
     shell:
         """
+        # PERL_HASH_SEED=0: Perl randomises hash iteration order per process, which changed which of
+        # two overlapping/flanking-adjacent loci gff2gbSmallDNA.pl kept between runs (same input, 9/4,696
+        # loci swapped on Arabidopsis) and thus the trained model. Fixing the seed makes it reproducible.
+        export PERL_HASH_SEED=0 PERL_PERTURB_KEYS=0
         gff2gbSmallDNA.pl {input.gff} {input.genome} {params.flanking_region} {output} &> {log}
         """
 
@@ -279,6 +283,7 @@ rule new_species:
         fi
         echo "Creating Augustus species '{params.name}' in $AUGUSTUS_CONFIG_PATH/species/{params.name}" > {log}
         rm -rf "$AUGUSTUS_CONFIG_PATH/species/{params.name}"
+        export PERL_HASH_SEED=0 PERL_PERTURB_KEYS=0
         new_species.pl --species={params.name} &>> {log}
         """
 
@@ -334,7 +339,7 @@ rule filter_genes:
         mem=config.resources.small.mem,
         runtime=config.resources.small.time,
     shell:
-        "filterGenes.pl {input.bad_list} {input.gb} > {output}"
+        "export PERL_HASH_SEED=0 PERL_PERTURB_KEYS=0; filterGenes.pl {input.bad_list} {input.gb} > {output}"
 
 
 rule retrain:

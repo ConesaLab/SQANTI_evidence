@@ -11,6 +11,62 @@ Author: Pablo Atienza & Gemini
 """
 import sys
 import os
+import re
+
+
+BUSCO_ID_RE = re.compile(r"^(\d+at\d+)")
+
+
+def busco_gene_key(attrs: str):
+    """
+    Gene key for a BUSCO/Miniprot GFF record.
+
+    BUSCO's miniprot GFF identifies alignments by an arbitrary `ID=MP######` / `Parent=MP######`,
+    while the protein FASTA written by busco_complete_aa.py (and therefore the CD-HIT list) uses the
+    BUSCO id, e.g. `10052at3699`. The BUSCO id is the prefix of the `Target=` attribute
+    (`Target=10052at3699_29727_0:004f4a 1 586`). Keying BUSCO genes by it makes GFF, FAA and CD-HIT
+    ids agree (roadmap 1.7b; before this, busco_non_overlapping.faa was always empty and no BUSCO gene
+    ever reached the training set). Returns None if the record has no BUSCO-style Target.
+    """
+    for attr in attrs.split(";"):
+        attr = attr.strip()
+        if attr.startswith("Target="):
+            m = BUSCO_ID_RE.match(attr[len("Target="):].strip())
+            return m.group(1) if m else None
+    return None
+
+
+def resolve_gene_key(attrs: str, id_map: dict):
+    """
+    Gene key for one GFF record, remembering ID -> key so that child records that carry only
+    `Parent=` (e.g. Miniprot `stop_codon` lines, which have no Target=) join their parent's gene.
+    """
+    key = busco_gene_key(attrs) or generic_gene_key(attrs)
+    rec_id = parent = None
+    for attr in attrs.split(";"):
+        attr = attr.strip()
+        if attr.startswith("ID="):
+            rec_id = attr[3:].strip()
+        elif attr.startswith("Parent="):
+            parent = attr[7:].strip()
+    if parent and parent in id_map:
+        key = id_map[parent]
+    if rec_id and key:
+        id_map[rec_id] = key
+    return key
+
+
+def generic_gene_key(attrs: str):
+    """gene_id "x" (GTF) or ID=/Parent= (GFF3, isoform suffix after '.' stripped); None if absent."""
+    for attr in attrs.split(";"):
+        attr = attr.strip()
+        if attr.startswith("gene_id"):
+            return attr.split("gene_id")[-1].strip().strip('"').strip("'").strip()
+        if attr.startswith("ID="):
+            return attr.split("ID=")[-1].strip().split(".")[0]
+        if attr.startswith("Parent="):
+            return attr.split("Parent=")[-1].strip().split(".")[0]
+    return None
 
 
 def parse_cdhit_list(cdhit_lst_path: str) -> set:
@@ -34,6 +90,7 @@ def parse_gff_by_gene(gff_path: str) -> tuple:
     """
     gene_order = []
     gene_lines = {}
+    id_map = {}
 
     with open(gff_path, "r") as f:
         for line in f:
@@ -44,19 +101,8 @@ def parse_gff_by_gene(gff_path: str) -> tuple:
                 continue
 
             attrs = fields[8]
-            gene_id = None
-            for attr in attrs.split(";"):
-                attr = attr.strip()
-                if attr.startswith("gene_id"):
-                    gene_id = attr.split("gene_id")[-1].strip().strip('"').strip("'").strip()
-                    break
-                elif attr.startswith("ID="):
-                    gene_id = attr.split("ID=")[-1].strip().split(".")[0]
-                    break
-                elif attr.startswith("Parent="):
-                    gene_id = attr.split("Parent=")[-1].strip().split(".")[0]
-                    break
-
+            # BUSCO/Miniprot records: key by BUSCO id (Target=), same as the FAA/CD-HIT ids
+            gene_id = resolve_gene_key(attrs, id_map)
             if not gene_id:
                 first_attr = attrs.split(";")[0].strip()
                 gene_id = first_attr.split("=")[-1].strip()

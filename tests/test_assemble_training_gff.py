@@ -126,3 +126,24 @@ def test_end_to_end_gff_assembly():
         assert "busco_1" in gff_content
         assert "sqanti_1" in gff_content
         assert "sqanti_2" in gff_content
+
+
+def test_real_busco_ids_match_cdhit_representatives(tmp_path):
+    """BUSCO GFF keyed by Target= BUSCO id must match CD-HIT ids taken from the FAA headers (roadmap 1.7b)."""
+    busco_gff = tmp_path / "busco.gff"
+    busco_gff.write_text(
+        "5\tminiprot\tmRNA\t100\t900\t.\t+\t.\tID=MP062483;Rank=1;Target=10052at3699_29727_0:004f4a 1 200\n"
+        "5\tminiprot\tCDS\t100\t900\t.\t+\t0\tParent=MP062483;Rank=1;Target=10052at3699_29727_0:004f4a 1 200\n"
+        "2\tminiprot\tmRNA\t100\t900\t.\t-\t.\tID=MP249840;Rank=1;Target=10055at3699_90675_0:00349a 1 125\n"
+        "2\tminiprot\tCDS\t100\t900\t.\t-\t0\tParent=MP249840;Rank=1;Target=10055at3699_90675_0:00349a 1 125\n"
+    )
+    sqanti_gff = tmp_path / "sqanti.gff"
+    sqanti_gff.write_text('1\tSQANTI3\tCDS\t1000\t2000\t.\t+\t0\ttranscript_id "t1"; gene_id "novelGene_1";\n')
+    cdhit = tmp_path / "cdhit.lst"
+    cdhit.write_text("novelGene_1 t1\n10052at3699\n")   # 10055at3699 clustered away
+    b_order, b_dict = atg.parse_gff_by_gene(str(busco_gff))
+    s_order, s_dict = atg.parse_gff_by_gene(str(sqanti_gff))
+    assert b_order == ["10052at3699", "10055at3699"]
+    sel_b, sel_s = atg.assemble_training_genes(atg.parse_cdhit_list(str(cdhit)), b_order, b_dict, s_order, s_dict,
+                                               max_genes=5000, strategy="busco_core")
+    assert sel_b == ["10052at3699"] and sel_s == ["novelGene_1"]

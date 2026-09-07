@@ -88,3 +88,51 @@ def test_filter_busco_overlaps_direct_and_flanking():
         clean_faa_records = list(SeqIO.parse(out_clean_faa, "fasta"))
         assert len(clean_faa_records) == 2
         assert {r.id for r in clean_faa_records} == {"busco_clean", "busco_diff_chr"}
+
+
+# ---------------------------------------------------------------------------
+# Real-shaped ids (roadmap 1.7b): BUSCO's miniprot GFF uses ID=MP######/Parent=MP######
+# and identifies the BUSCO through Target=<busco_id>_<taxid>_<...>; the FAA headers are the
+# bare BUSCO id. The old key (MP id) never matched a FAA header -> empty FAA.
+# ---------------------------------------------------------------------------
+REAL_BUSCO_GFF = (
+    "5\tminiprot\tmRNA\t20152898\t20155574\t2551\t+\t.\tID=MP062483;Rank=1;Identity=0.8260;Target=10052at3699_29727_0:004f4a 1 586\n"
+    "5\tminiprot\tCDS\t20152898\t20152956\t101\t+\t0\tParent=MP062483;Rank=1;Identity=1.0000;Target=10052at3699_29727_0:004f4a 1 19\n"
+    "5\tminiprot\tCDS\t20153075\t20155574\t943\t+\t1\tParent=MP062483;Rank=1;Identity=0.8211;Target=10052at3699_29727_0:004f4a 20 586\n"
+    "5\tminiprot\tstop_codon\t20155572\t20155574\t.\t+\t0\tParent=MP062483;Rank=1\n"
+    "2\tminiprot\tmRNA\t15449839\t15451307\t607\t-\t.\tID=MP249840;Rank=1;Identity=0.9600;Target=10055at3699_90675_0:00349a 1 125\n"
+    "2\tminiprot\tCDS\t15450518\t15451307\t212\t-\t0\tParent=MP249840;Rank=1;Identity=0.9184;Target=10055at3699_90675_0:00349a 1 125\n"
+    "2\tminiprot\tstop_codon\t15450518\t15450520\t.\t-\t0\tParent=MP249840;Rank=1\n"
+)
+
+
+def test_busco_gene_key_from_target():
+    assert fbo.busco_gene_key("ID=MP062483;Rank=1;Target=10052at3699_29727_0:004f4a 1 586") == "10052at3699"
+    assert fbo.busco_gene_key("Parent=MP062483;Rank=1") is None
+    assert fbo.generic_gene_key("Parent=MP062483;Rank=1") == "MP062483"
+    assert fbo.generic_gene_key('gene_id "novelGene_1"; transcript_id "t1";') == "novelGene_1"
+
+
+def test_real_busco_ids_reach_the_faa(tmp_path):
+    sqanti = tmp_path / "sqanti.gff"
+    # SQANTI gene overlapping the chr2 BUSCO only
+    sqanti.write_text('2\tSQANTI3\tCDS\t15450000\t15452000\t.\t-\t0\tgene_id "novelGene_9"; transcript_id "t9";\n')
+    busco_gff = tmp_path / "busco.gff"; busco_gff.write_text(REAL_BUSCO_GFF)
+    busco_faa = tmp_path / "busco.faa"
+    SeqIO.write([SeqRecord(Seq("MAAA"), id="10052at3699", description=""),
+                 SeqRecord(Seq("MBBB"), id="10055at3699", description="")], str(busco_faa), "fasta")
+    genes, lines = fbo.parse_busco_gff_records(str(busco_gff))
+    assert set(genes) == {"10052at3699", "10055at3699"}          # keyed by BUSCO id, not MP id
+    assert len(lines["10052at3699"]) == 4                        # mRNA + 2 CDS + stop_codon kept together
+    retained = fbo.filter_busco_genes(genes, fbo.extract_gene_intervals_from_gff(str(sqanti)), 1000)
+    assert retained == ["10052at3699"]
+    out_faa = tmp_path / "clean.faa"
+    n = fbo.filter_and_write_faa(str(busco_faa), set(retained), str(out_faa))
+    assert n == 1 and [r.id for r in SeqIO.parse(str(out_faa), "fasta")] == ["10052at3699"]
+
+
+def test_id_mismatch_between_gff_and_faa_raises(tmp_path):
+    busco_faa = tmp_path / "busco.faa"
+    SeqIO.write([SeqRecord(Seq("MAAA"), id="something_else", description="")], str(busco_faa), "fasta")
+    with pytest.raises(ValueError, match="identifiers disagree"):
+        fbo.filter_and_write_faa(str(busco_faa), {"10052at3699"}, str(tmp_path / "clean.faa"))

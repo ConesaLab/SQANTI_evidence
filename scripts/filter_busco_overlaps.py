@@ -8,7 +8,63 @@ Author: Pablo Atienza & Gemini
 """
 import sys
 import os
+import re
 from Bio import SeqIO
+
+
+BUSCO_ID_RE = re.compile(r"^(\d+at\d+)")
+
+
+def busco_gene_key(attrs: str):
+    """
+    Gene key for a BUSCO/Miniprot GFF record.
+
+    BUSCO's miniprot GFF identifies alignments by an arbitrary `ID=MP######` / `Parent=MP######`,
+    while the protein FASTA written by busco_complete_aa.py (and therefore the CD-HIT list) uses the
+    BUSCO id, e.g. `10052at3699`. The BUSCO id is the prefix of the `Target=` attribute
+    (`Target=10052at3699_29727_0:004f4a 1 586`). Keying BUSCO genes by it makes GFF, FAA and CD-HIT
+    ids agree (roadmap 1.7b; before this, busco_non_overlapping.faa was always empty and no BUSCO gene
+    ever reached the training set). Returns None if the record has no BUSCO-style Target.
+    """
+    for attr in attrs.split(";"):
+        attr = attr.strip()
+        if attr.startswith("Target="):
+            m = BUSCO_ID_RE.match(attr[len("Target="):].strip())
+            return m.group(1) if m else None
+    return None
+
+
+def resolve_gene_key(attrs: str, id_map: dict):
+    """
+    Gene key for one GFF record, remembering ID -> key so that child records that carry only
+    `Parent=` (e.g. Miniprot `stop_codon` lines, which have no Target=) join their parent's gene.
+    """
+    key = busco_gene_key(attrs) or generic_gene_key(attrs)
+    rec_id = parent = None
+    for attr in attrs.split(";"):
+        attr = attr.strip()
+        if attr.startswith("ID="):
+            rec_id = attr[3:].strip()
+        elif attr.startswith("Parent="):
+            parent = attr[7:].strip()
+    if parent and parent in id_map:
+        key = id_map[parent]
+    if rec_id and key:
+        id_map[rec_id] = key
+    return key
+
+
+def generic_gene_key(attrs: str):
+    """gene_id "x" (GTF) or ID=/Parent= (GFF3, isoform suffix after '.' stripped); None if absent."""
+    for attr in attrs.split(";"):
+        attr = attr.strip()
+        if attr.startswith("gene_id"):
+            return attr.split("gene_id")[-1].strip().strip('"').strip("'").strip()
+        if attr.startswith("ID="):
+            return attr.split("ID=")[-1].strip().split(".")[0]
+        if attr.startswith("Parent="):
+            return attr.split("Parent=")[-1].strip().split(".")[0]
+    return None
 
 
 def extract_gene_intervals_from_gff(gff_path: str) -> dict:
@@ -78,6 +134,7 @@ def parse_busco_gff_records(busco_gff_path: str) -> tuple:
     """
     busco_genes = {}  # gene_id -> [chrom, min_start, max_end]
     busco_lines = {}  # gene_id -> list of raw lines
+    id_map = {}       # record ID -> gene key (lets Parent-only children follow their mRNA)
 
     with open(busco_gff_path, "r") as f:
         for line in f:
@@ -92,18 +149,9 @@ def parse_busco_gff_records(busco_gff_path: str) -> tuple:
             end = int(fields[4])
             attrs = fields[8]
 
-            gene_id = None
-            for attr in attrs.split(";"):
-                attr = attr.strip()
-                if attr.startswith("ID="):
-                    gene_id = attr.split("ID=")[-1].strip().split(".")[0]
-                    break
-                elif attr.startswith("gene_id"):
-                    gene_id = attr.split("gene_id")[-1].strip().strip('"').strip("'").strip()
-                    break
-
+            # BUSCO id from Target= (matches the FAA headers); fall back to ID=/Parent=/gene_id
+            gene_id = resolve_gene_key(attrs, id_map)
             if not gene_id:
-                # Fallback to first field of attributes
                 first_attr = attrs.split(";")[0].strip()
                 gene_id = first_attr.split("=")[-1].strip()
 
@@ -169,17 +217,24 @@ def filter_busco_genes(
     return retained_ids
 
 
-def filter_and_write_faa(busco_faa_path: str, retained_ids: set, out_faa_path: str):
-    """Filter BUSCO FAA to write only retained gene sequences."""
+def filter_and_write_faa(busco_faa_path: str, retained_ids: set, out_faa_path: str) -> int:
+    """Filter BUSCO FAA to write only retained gene sequences. Returns the number written."""
     written_count = 0
     with open(out_faa_path, "w") as out_f:
         for record in SeqIO.parse(busco_faa_path, "fasta"):
-            # Check if record id or prefix matches retained IDs
+            # FAA headers are BUSCO ids (see busco_complete_aa.py); tolerate an isoform suffix
             rec_id = record.id.split(".")[0]
             if record.id in retained_ids or rec_id in retained_ids:
                 SeqIO.write(record, out_f, "fasta")
                 written_count += 1
     sys.stderr.write(f"### Wrote {written_count} sequences to {out_faa_path}\n")
+    if retained_ids and written_count == 0:
+        raise ValueError(
+            f"No sequence of {busco_faa_path} matches any of the {len(retained_ids)} retained BUSCO gene ids "
+            f"(e.g. {sorted(retained_ids)[:3]}). GFF and FAA identifiers disagree; the training set would silently "
+            "lose all BUSCO genes."
+        )
+    return written_count
 
 
 def main():

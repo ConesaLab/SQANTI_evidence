@@ -1,8 +1,9 @@
-if config.prediction.mode == "split":
-
-    include: "split_augustus.smk"
-
-else:
+# Pure ab initio Augustus prediction (no hints). Only reached when curation.mode == "ab_initio",
+# where ab_initio_prediction.gtf serves as the reference annotation for SQANTI3 (get_sqanti_gtf).
+# In the default "placebo" mode this file contributes nothing to the DAG.
+# In split mode the per-chromosome rules in rules/split_augustus.smk (included from the
+# snakefile) produce ab_initio_prediction.gff instead.
+if config.prediction.mode != "split":
 
     rule run_augustus:
         input:

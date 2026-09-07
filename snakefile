@@ -76,6 +76,10 @@ include: os.path.join("rules","ab_initio.smk")
 
 include: os.path.join("rules","evidence_driven.smk")
 
+# Chromosome-parallel Augustus rules (both ab initio and hint-guided) live in one file
+if config.prediction.mode == "split":
+    include: os.path.join("rules","split_augustus.smk")
+
 include: os.path.join("rules","quality_control.smk")
 
 rule all:

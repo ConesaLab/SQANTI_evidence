@@ -20,7 +20,7 @@ rule split_fasta:
     script:
         os.path.join(dir.scripts,"splitfasta.py")
 
-rule ed_augusuts_per_chromosome:
+rule ed_augustus_per_chromosome:
     input:
         os.path.join(dir.tools_reference,genome_name,f"{genome_name}_split.done"),
         mod = os.path.join(dir.out.ab_augustus_training,"SC_freq_mod.done"),

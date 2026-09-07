@@ -10,6 +10,11 @@ genomes_benchmark/
 
 # Gemini-specific files
 GEMINI.md
+CLAUDE.md
 LEARNINGS.gemini.md
 docs/
 GIT_HISTORY.txt
+
+# dry-run fixture outputs
+tests/dryrun/results/
+tests/dryrun/tools/

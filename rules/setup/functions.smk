@@ -51,10 +51,10 @@ def validate_and_fill_config(config_dict):
         
     prd.setdefault("mode", "full")
     prd.setdefault("utr", True)
-    prd.setdefault("filter_mode", "monoexon")
-
-    if prd["filter_mode"] not in ["monoexon", "all"]:
-        raise ValueError("ERROR: 'prediction.filter_mode' must be either 'monoexon' or 'all'.")
+    # Tier 2 (Augustus) single-exon noise filter applied by resolve_transcript_tiers.py
+    prd.setdefault("filter_mode", "medium")
+    if prd["filter_mode"] not in ["strict", "medium", "none"]:
+        raise ValueError("ERROR: 'prediction.filter_mode' must be one of 'strict', 'medium', or 'none'.")
 
     envs_dir = os.path.abspath(os.path.join(workflow.basedir, "envs"))
 
@@ -63,9 +63,6 @@ def validate_and_fill_config(config_dict):
 
     if not prd.get("hint_weights") or not os.path.isfile(prd.get("hint_weights")):
         prd["hint_weights"] = os.path.join(envs_dir, "extrinsic.hints_weights_default.cfg")
-
-    if not prd.get("tsebra_config") or not os.path.isfile(prd.get("tsebra_config")):
-        prd["tsebra_config"] = os.path.join(envs_dir, "tsebra.cfg")
 
     # 4. curation
     if "curation" not in config_dict:
@@ -87,23 +84,21 @@ def validate_and_fill_config(config_dict):
     eva.setdefault("reference_gtf", "")
  
     # 6. resources
+    # Convention: Slurm-style human-readable values, e.g. mem: "8GB", time: "2h" (Snakemake parses
+    # both via humanfriendly for the `mem` and `runtime` resources). Missing keys are filled per tier.
     if "resources" not in config_dict:
         config_dict["resources"] = {}
     res = config_dict["resources"]
-    res.setdefault("small", {"cpus": 2, "mem_mb": 8192, "time_min": 120, "qos": "short"})
-    res.setdefault("medium", {"cpus": 8, "mem_mb": 12288, "time_min": 600, "qos": "short"})
-    res.setdefault("big", {"cpus": 10, "mem_mb": 20480, "time_min": 1440, "qos": "long"})
-    res.setdefault("small_bigMem", {"mem_mb": 20480})
-    res.setdefault("busco", {"cpus": 30, "mem_mb": 61440, "time_min": 7200, "qos": "long"})
-
-    # Backward compatibility for mem and time keys
-    for rname, rdict in res.items():
-        if "mem_mb" in rdict:
-            rdict["mem"] = f"{rdict['mem_mb']}M"
-        if "time_min" in rdict:
-            # Convert minutes to HH:MM:SS if needed, or just keep as minutes string
-            # Most Slurm executors accept minutes, but Snakemake's 'runtime' often expects minutes
-            rdict["time"] = f"{rdict['time_min']}"
+    resource_defaults = {
+        "small":  {"cpus": 2,  "mem": "8GB",  "time": "2h",  "qos": "short"},
+        "medium": {"cpus": 8,  "mem": "12GB", "time": "10h", "qos": "short"},
+        "big":    {"cpus": 10, "mem": "20GB", "time": "24h", "qos": "long"},
+        "busco":  {"cpus": 30, "mem": "60GB", "time": "72h", "qos": "long"},
+    }
+    for tier, defaults in resource_defaults.items():
+        tier_cfg = res.setdefault(tier, {})
+        for key, value in defaults.items():
+            tier_cfg.setdefault(key, value)
 
     return config_dict
 

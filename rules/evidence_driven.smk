@@ -84,11 +84,9 @@ rule combine_evidence_hints:
         """
 
 
-if config.prediction.mode == "split":
-
-    include: "split_augustus.smk"
-
-else:
+# In split mode the per-chromosome rules in rules/split_augustus.smk (included from the
+# snakefile) produce Augustus_prediction.gff instead.
+if config.prediction.mode != "split":
 
     rule augustus_hints:
         input:
@@ -135,7 +133,7 @@ rule resolve_transcript_tiers:
         runtime=config.resources.small.time,
     params:
         min_monoexon_len=300,
-        filter_mode=config.prediction.filter_mode if "filter_mode" in config.prediction else "medium",
+        filter_mode=config.prediction.filter_mode,
     script:
         os.path.join(dir.scripts, "resolve_transcript_tiers.py")
 

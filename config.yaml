@@ -1,37 +1,41 @@
 project:
-  genome: ""
-  input: ""
+  genome: ""                      # Reference genome FASTA to annotate (required; softmasked recommended)
+  input: ""                       # Long reads: FASTQ/FASTA or unaligned BAM (required)
   outdir: "SQANTI_evidence_results"
-  toolsdir: "/home/pabloati/Programs/lr_annotation"
-  prediction_genome: "" # Defaults to project.genome if empty
+  toolsdir: "/path/to/tools_dir"  # Conda envs, BUSCO/OMArk databases and split genomes are stored here
+  prediction_genome: ""           # Genome used for Augustus prediction; defaults to project.genome if empty
   log_level: "INFO"
 
 training:
-  mode: "mixed" # Options: mixed, busco_only, sqanti_only
-  lineage: "eutheria_odb10"
-  miniprot_threshold: 0.95
-  flanking_region: 1000
-  test_size: 5000
+  mode: "mixed"                   # Options: mixed, busco_only, sqanti_only
+  lineage: "eutheria_odb10"       # BUSCO lineage (required for mixed / busco_only)
+  miniprot_threshold: 0.95        # Minimum identity to keep a BUSCO/Miniprot gene model
+  flanking_region: 1000           # Flanking bp added around training genes (gff2gbSmallDNA.pl)
+  test_size: 5000                 # Maximum number of genes in the Augustus training set
   busco_downloads: "busco_downloads"
 
 prediction:
-  species: "trial"
-  mode: "split" # Options: split, full
+  species: "trial"                # Augustus species name to create/train
+  mode: "split"                   # Options: split (one Augustus job per chromosome), full
   utr: True
+  filter_mode: "medium"           # Tier 2 single-exon filter: strict (needs hint support),
+                                  #   medium (>= 300 bp or hint support), none
   hint_config: "envs/hint_config.tsv"
-  hint_weights: "envs/extrinsic.hints_conf.Ale.cfg"
-  tsebra_config: "envs/tsebra.cfg"
+  hint_weights: "envs/extrinsic.hints_weights_default.cfg"
 
 curation:
-  mode: "placebo" # Options: ab_initio, placebo, user
-  user_gtf: ""    # Path to custom GTF if mode is 'user'
+  mode: "placebo"                 # Reference given to SQANTI3: ab_initio, placebo, user
+  user_gtf: ""                    # Path to custom GTF if mode is 'user'
+  data_type: "pacbio"             # IsoQuant --data_type: pacbio (CCS/HiFi), nanopore, assembly
   filter_rules: "envs/filter_rules.json"
 
 evaluation:
-  reference_gtf: ""
+  reference_gtf: ""               # Optional; enables GffCompare benchmarking when set
   omark_db: "LUCA"
   omark_taxid: 10090
 
+# Slurm-style human-readable values (mem in GB, time in h). Any missing key falls back
+# to the defaults in rules/setup/functions.smk.
 resources:
   small:
     cpus: 2
@@ -53,5 +57,3 @@ resources:
     mem: "60GB"
     time: "72h"
     qos: "long"
-  small_bigMem:
-    mem: "20GB"

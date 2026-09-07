@@ -130,19 +130,26 @@ def log_config_summary(logger, config):
     
     # Training parameters
     logger.info("Training Configuration:")
+    logger.info(f"  Mode: {config.training.mode}")
     logger.info(f"  BUSCO lineage: {config.training.lineage}")
-    logger.info(f"  Miniprot ID threshold: {config.training.miniprot_id}")
-    logger.info(f"  Flanking region: {config.training.flanking}")
+    logger.info(f"  Miniprot ID threshold: {config.training.miniprot_threshold}")
+    logger.info(f"  Flanking region: {config.training.flanking_region}")
+    logger.info(f"  Max training genes: {config.training.test_size}")
     
     # Prediction parameters
     logger.info("Prediction Configuration:")
     logger.info(f"  Species name: {config.prediction.species}")
     logger.info(f"  UTR: {config.prediction.utr}")
     logger.info(f"  Mode: {config.prediction.mode}")
+    logger.info(f"  Tier 2 monoexon filter: {config.prediction.filter_mode}")
+    logger.info(f"  Hint config: {config.prediction.hint_config}")
+    logger.info(f"  Hint weights: {config.prediction.hint_weights}")
     
     # Curation parameters
     logger.info("Curation Configuration:")
     logger.info(f"  Mode: {config.curation.mode}")
+    logger.info(f"  Data type: {config.curation.data_type}")
+    logger.info(f"  Filter rules: {config.curation.filter_rules}")
     
     # Evaluation parameters
     logger.info("Evaluation Configuration:")

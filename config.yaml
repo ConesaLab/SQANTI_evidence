@@ -22,9 +22,9 @@ prediction:
                                   #   medium (>= 300 bp or hint support), none
   hint_config: "envs/hint_config.tsv"
   hint_weights: "envs/extrinsic.hints_weights_default.cfg"
-  miniprot_args: "-N 5 -p 0.6"     # Miniprot options for self-protein hints (src=P). Secondary
-                                  #   alignments (paralogs) are only written when --outs is lowered,
-                                  #   e.g. "-N 30 -p 0.6 --outs=0.5"
+  miniprot_args: "-N 30 -p 0.6 --outs=0.5"   # Miniprot options for self-protein hints (src=P).
+                                  #   --outs=0.5 lets secondary (paralog) alignments through; Miniprot's
+                                  #   default 0.99 suppresses them entirely.
 
 curation:
   mode: "placebo"                 # Reference given to SQANTI3: ab_initio, placebo, user

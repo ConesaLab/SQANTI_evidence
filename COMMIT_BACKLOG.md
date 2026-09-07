@@ -2,6 +2,14 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-07] - Miniprot Paralog Recovery Becomes the Default
+- **Branch**: `dev-IsoQuant`
+- **Goal**: Adopt the validated Miniprot settings as the pipeline default (roadmap 1.8 / 1.6 validation).
+- **Summary**:
+    - Two Arabidopsis reruns (Garnatxa jobs 3038924, 3039034) vs the custom-filter baseline, CDS level: locus Sn/Sp 55.9/74.2 → 57.5/75.8 (`--outs=0.5`) → 57.7/76.2 (+ fixed hint converter); transcript 39.3/67.9 → 40.6/69.0; missed reference loci 7,198 → 7,072. Tier 2 genes with protein support 28 → 1,459; fully supported multi-exon genes 84% exact vs 38% unhinted.
+    - `prediction.miniprot_args` default changed from `"-N 5 -p 0.6"` to `"-N 30 -p 0.6 --outs=0.5"` in `rules/setup/functions.smk`, `config.yaml`, `README.md`.
+    - Register of all Arabidopsis variants and their metrics: `genomes_benchmark/Arabidopsis_tests.md` on Garnatxa (gitignored benchmark area).
+
 ## [2026-09-07] - Tier Resolver: Nested-Interval-Safe Overlap Search, Log Output (roadmap 1.5)
 - **Branch**: `dev-IsoQuant`
 - **Goal**: Fix the overlap search in `scripts/resolve_transcript_tiers.py`, which could let Augustus genes nested inside long SQANTI genes through as duplicated loci, and make the rule log useful.

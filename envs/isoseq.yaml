@@ -1,8 +1,0 @@
-name: isoseq
-channels:
-  - conda-forge
-  - bioconda
-dependencies:
-  - isoseq
-  - lima
-  - pbmm2

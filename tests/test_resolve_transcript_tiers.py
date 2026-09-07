@@ -192,3 +192,103 @@ def test_snakemake_object_integration(mock_sqanti_gtf, mock_augustus_gff):
             content = f.read()
             assert 'gene_id "sq_gene1"' in content
             assert 'gene_id "g2_gap"' in content
+
+
+# ---------------------------------------------------------------------------
+# Nested-interval regression tests (roadmap 1.5): the previous implementation
+# binary-searched the unsorted list of interval ends and missed containing genes.
+# ---------------------------------------------------------------------------
+import random
+
+
+def test_nested_locus_is_detected():
+    """Long SQANTI gene A containing short gene B; Augustus gene inside A after B."""
+    ivs = {("chr1", "+"): [(100, 10000, "A"), (200, 300, "B")]}
+    assert rtt.check_locus_overlap("chr1", "+", 5000, 6000, ivs) is True
+    # query before B, inside A
+    assert rtt.check_locus_overlap("chr1", "+", 120, 150, ivs) is True
+    # query after A
+    assert rtt.check_locus_overlap("chr1", "+", 10001, 10500, ivs) is False
+
+
+def test_first_gene_longer_than_second():
+    ivs = {("chr1", "-"): [(1000, 5000, "long"), (1200, 1500, "short"), (7000, 8000, "far")]}
+    assert rtt.check_locus_overlap("chr1", "-", 4000, 4500, ivs) is True   # inside long, after short
+    assert rtt.check_locus_overlap("chr1", "-", 5500, 6500, ivs) is False  # gap between long and far
+    assert rtt.check_locus_overlap("chr1", "-", 6500, 7000, ivs) is True   # touches far
+
+
+def test_opposite_strand_nested_gene_is_not_an_overlap():
+    ivs = {("chr1", "+"): [(100, 10000, "A"), (200, 300, "B")]}
+    assert rtt.check_locus_overlap("chr1", "-", 5000, 6000, ivs) is False
+
+
+def test_hint_support_with_nested_hints():
+    hints = {("chr2", "+"): [(100, 10000), (200, 300)]}
+    assert rtt.check_hint_support("chr2", "+", 5000, 5100, hints) is True
+    assert rtt.check_hint_support("chr2", "+", 20000, 20100, hints) is False
+
+
+def test_index_matches_bruteforce_on_random_intervals():
+    rng = random.Random(1234)
+    ivs = [(s, s + rng.randint(1, 3000), f"g{i}") for i, s in enumerate(rng.randint(1, 100000) for _ in range(400))]
+    index = rtt.build_interval_index({("c", "+"): ivs})
+    for _ in range(3000):
+        qs = rng.randint(1, 105000); qe = qs + rng.randint(0, 2000)
+        truth = any(qs <= e and qe >= s for s, e, _ in ivs)
+        assert rtt.index_overlaps(index, "c", "+", qs, qe) == truth
+
+
+def test_resolver_discards_augustus_gene_nested_in_long_sqanti_gene(tmp_path):
+    sqanti = tmp_path / "sq.gtf"
+    sqanti.write_text(
+        'chr1\tSQANTI3\ttranscript\t100\t10000\t.\t+\t.\ttranscript_id "A.1"; gene_id "A";\n'
+        'chr1\tSQANTI3\texon\t100\t400\t.\t+\t.\ttranscript_id "A.1"; gene_id "A";\n'
+        'chr1\tSQANTI3\texon\t9000\t10000\t.\t+\t.\ttranscript_id "A.1"; gene_id "A";\n'
+        'chr1\tSQANTI3\ttranscript\t200\t300\t.\t+\t.\ttranscript_id "B.1"; gene_id "B";\n'
+        'chr1\tSQANTI3\texon\t200\t300\t.\t+\t.\ttranscript_id "B.1"; gene_id "B";\n'
+    )
+    aug = tmp_path / "aug.gff"
+    aug.write_text(
+        "# start gene g1\n"
+        "chr1\tAUGUSTUS\tgene\t5000\t6000\t.\t+\t.\tg1\n"
+        'chr1\tAUGUSTUS\ttranscript\t5000\t6000\t.\t+\t.\tg1.t1\n'
+        'chr1\tAUGUSTUS\tCDS\t5000\t5400\t.\t+\t0\ttranscript_id "g1.t1"; gene_id "g1";\n'
+        'chr1\tAUGUSTUS\tintron\t5401\t5599\t.\t+\t.\ttranscript_id "g1.t1"; gene_id "g1";\n'
+        'chr1\tAUGUSTUS\tCDS\t5600\t6000\t.\t+\t0\ttranscript_id "g1.t1"; gene_id "g1";\n'
+        "# end gene g1\n"
+        "# start gene g2\n"
+        "chr1\tAUGUSTUS\tgene\t20000\t21000\t.\t+\t.\tg2\n"
+        'chr1\tAUGUSTUS\tCDS\t20000\t20400\t.\t+\t0\ttranscript_id "g2.t1"; gene_id "g2";\n'
+        'chr1\tAUGUSTUS\tintron\t20401\t20599\t.\t+\t.\ttranscript_id "g2.t1"; gene_id "g2";\n'
+        'chr1\tAUGUSTUS\tCDS\t20600\t21000\t.\t+\t0\ttranscript_id "g2.t1"; gene_id "g2";\n'
+        "# end gene g2\n"
+    )
+    out = tmp_path / "resolved.gtf"; log = tmp_path / "logs" / "resolver.log"
+    stats = rtt.resolve_tiers(str(sqanti), str(aug), str(out), hints_file=None, filter_mode="medium", log_path=str(log))
+    content = out.read_text()
+    assert 'gene_id "g1"' not in content        # nested inside A: must be discarded (old code kept it)
+    assert 'gene_id "g2"' in content            # true gap filler kept
+    assert stats == {"tier1": 2, "tier2": 1, "dropped_overlap": 1, "dropped_monoexon": 0}
+    assert "Augustus redundant overlaps discarded     : 1" in log.read_text()
+
+
+def test_invalid_filter_mode_raises(tmp_path):
+    sq = tmp_path / "sq.gtf"; sq.write_text(""); au = tmp_path / "au.gff"; au.write_text("")
+    with pytest.raises(ValueError, match="filter_mode"):
+        rtt.resolve_tiers(str(sq), str(au), str(tmp_path / "o.gtf"), filter_mode="monoexon")
+
+
+def test_main_snakemake_entry_point_writes_output_and_log(mock_sqanti_gtf, mock_augustus_gff, tmp_path):
+    sq = tmp_path / "sq.gtf"; sq.write_text(mock_sqanti_gtf)
+    au = tmp_path / "au.gff"; au.write_text(mock_augustus_gff)
+    out = tmp_path / "resolved.gtf"; log = tmp_path / "resolver.log"
+    smk = SimpleNamespace(
+        input=SimpleNamespace(sqanti_gtf=str(sq), augustus_gff=str(au), hints=None),
+        output=SimpleNamespace(resolved_gtf=str(out)),
+        params=SimpleNamespace(min_monoexon_len=300, filter_mode="medium"),
+        log=[str(log)],
+    )
+    stats = rtt.main_snakemake(smk)
+    assert out.is_file() and log.is_file()
+    assert f"Tier 1 (SQANTI3 empirical models retained) : {stats['tier1']}" in log.read_text()

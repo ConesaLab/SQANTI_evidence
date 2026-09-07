@@ -2,6 +2,15 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-07] - Tier Resolver: Nested-Interval-Safe Overlap Search, Log Output (roadmap 1.5)
+- **Branch**: `dev-IsoQuant`
+- **Goal**: Fix the overlap search in `scripts/resolve_transcript_tiers.py`, which could let Augustus genes nested inside long SQANTI genes through as duplicated loci, and make the rule log useful.
+- **Summary**:
+    - Bug: intervals were sorted by start but binary-searched over their *ends*, which are not sorted when a long gene contains a shorter one; the search then jumped past the containing gene and reported no overlap. Same construction in the monoexon hint-support check. Confirmed on the Arabidopsis run (about ten leaked genes; small there, larger on genomes with nested/overlapping loci).
+    - Fix: `build_interval_index()` (sorted starts + running maximum of ends, built once per chrom/strand) and `index_overlaps()`; `check_locus_overlap` / `check_hint_support` kept as wrappers. Identical answers on non-nested data.
+    - `resolve_tiers()` validates `filter_mode`, writes its summary to the rule's log file (was empty: `script:` rules do not capture stdout) and returns the counts; new `main_snakemake()` entry point.
+    - `tests/test_resolve_transcript_tiers.py`: +8 tests (nested locus, first-longer-than-second, opposite strand, nested hints, 3,000-query brute-force cross-check, end-to-end nested discard with log assertion, invalid filter_mode, real Snakemake entry point).
+
 ## [2026-09-07] - Miniprot Hints: Unique Groups and Evidence-Gated Start/Stop (roadmap 1.6)
 - **Branch**: `dev-IsoQuant`
 - **Goal**: Stop the protein-hint converter from asserting gene boundaries Miniprot never claimed, and from merging paralog loci into one Augustus hint group. Both defects were dormant while Miniprot wrote almost no secondary alignments (`--outs` default 0.99) and became live with `--outs=0.5`: in the experiment run, Tier 2 genes with *all* introns P-supported were 84.8% exact, those with only *some* supported 25.9% (mostly class j).

@@ -2,6 +2,11 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-07] - Miniprot Alignment Rule on the Medium Resource Tier
+- **Branch**: `dev-IsoQuant`
+- **Goal**: Prepare the human full run: `align_proteins_miniprot` used the `small` tier (2 CPUs / 8 GB), enough for Arabidopsis but not for indexing a 3 Gb genome.
+- **Summary**: `rules/evidence_driven.smk`: `align_proteins_miniprot` now uses `resources.medium` (cpus, mem, time, qos) and `threads` accordingly.
+
 ## [2026-09-07] - BUSCO Gene Ids Unified (mixed training now really mixed) and Deterministic Augustus Training (roadmap 1.7b, 1.4)
 - **Branch**: `dev-IsoQuant`
 - **Goal**: Make BUSCO genes actually reach the training set, and make `etraining` reproducible from an identical training set.

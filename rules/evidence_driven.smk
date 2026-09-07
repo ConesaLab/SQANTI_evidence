@@ -32,12 +32,14 @@ rule align_proteins_miniprot:
         os.path.join(dir.logs, "align_proteins_miniprot.log"),
     conda:
         os.path.join(dir.envs, "busco.yaml")
-    threads: config.resources.small.cpus
+    # medium tier: Miniprot indexes the whole genome in memory (>8 GB for a 3 Gb genome) and
+    # scales well with threads; the small tier (2 CPUs / 8 GB) only sufficed for compact genomes.
+    threads: config.resources.medium.cpus
     resources:
-        slurm_extra=f"'--qos={config.resources.small.qos}'",
-        cpus_per_task=config.resources.small.cpus,
-        mem=config.resources.small.mem,
-        runtime=config.resources.small.time,
+        slurm_extra=f"'--qos={config.resources.medium.qos}'",
+        cpus_per_task=config.resources.medium.cpus,
+        mem=config.resources.medium.mem,
+        runtime=config.resources.medium.time,
     params:
         miniprot_args=config.prediction.miniprot_args,
     shell:

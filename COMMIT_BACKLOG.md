@@ -2,6 +2,16 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-07] - Miniprot Hints: Unique Groups and Evidence-Gated Start/Stop (roadmap 1.6)
+- **Branch**: `dev-IsoQuant`
+- **Goal**: Stop the protein-hint converter from asserting gene boundaries Miniprot never claimed, and from merging paralog loci into one Augustus hint group. Both defects were dormant while Miniprot wrote almost no secondary alignments (`--outs` default 0.99) and became live with `--outs=0.5`: in the experiment run, Tier 2 genes with *all* introns P-supported were 84.8% exact, those with only *some* supported 25.9% (mostly class j).
+- **Summary**:
+    - `scripts/miniprot_to_hints.py`: `grp=` is now the Miniprot alignment `ID` (unique per alignment) instead of the protein name; the protein is kept as `target=`. `start` is emitted only when the aligned protein range begins at residue 1 (`Target` attribute); `stop` only when Miniprot emitted a `stop_codon` feature, at that feature's coordinates (Miniprot CDS features include the stop codon, so this coincides with the previous last-codon position for complete alignments). `Rank` and `Identity` parsed and kept. Missing/empty input now warns. Counts of suppressed start/stop hints reported.
+    - No cross-check against TD2 ORFs: `lrRNA` start/stop hints (from TD2 via `generate_hints.py`) are untouched; the change only removes `P` boundary hints for partial alignments.
+    - Real-data check (Arabidopsis, 18,992 alignments): CDSpart 134,065 and intron 115,073 unchanged; start 18,992 → 17,707; stop 18,992 → 16,277; hint groups 12,447 → 18,992.
+    - `tests/test_miniprot_to_hints.py` rewritten (8 tests): complete +/- strand, partial secondary alignment (no start/stop), N-terminal-complete without stop codon (start only), two alignments of one protein (distinct groups), numeric score column, empty input, Snakemake entry point.
+    - `prediction.miniprot_args` default left at `"-N 5 -p 0.6"` until the rerun with the fixed converter is validated; then `-N 30 -p 0.6 --outs=0.5` becomes the default.
+
 ## [2026-09-07] - Configurable Miniprot Options for Self-Protein Hints
 - **Branch**: `dev-IsoQuant`
 - **Goal**: Make the Miniprot call configurable so the paralog-recovery experiment (`--outs`) can be run from a config file without editing rules.

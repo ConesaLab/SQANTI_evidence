@@ -1,13 +1,11 @@
 import os
+import sys
 import logging
 
-AB_INITIO_TRAINING_ERROR = (
-    "ERROR: 'curation.mode' is 'ab_initio' but 'training.mode' is not 'busco_only'. "
-    "To generate an ab initio annotation for SQANTI3 to classify against, the Augustus gene model "
-    "must be trained using only BUSCO genes: the SQANTI3-derived training genes ('mixed' or "
-    "'sqanti_only') do not exist yet at that point, which makes the workflow circular. "
-    "Set training.mode: busco_only, or use curation.mode: placebo / user."
-)
+# Shared validation tables/messages live in scripts/input_check.py (plain Python, no Snakemake
+# dependency) so the wrapper pre-flight and this parse-time validation cannot drift apart.
+sys.path.insert(0, os.path.join(workflow.basedir, "scripts"))
+from input_check import ALLOWED_VALUES, validate_modes
 
 def validate_and_fill_config(config_dict):
     """
@@ -35,8 +33,8 @@ def validate_and_fill_config(config_dict):
         config_dict["training"] = {}
     trn = config_dict["training"]
     trn.setdefault("mode", "mixed")
-    if trn["mode"] not in ["mixed", "busco_only", "sqanti_only"]:
-        raise ValueError("ERROR: 'training.mode' must be one of 'mixed', 'busco_only', or 'sqanti_only'.")
+    if trn["mode"] not in ALLOWED_VALUES[("training", "mode")]:
+        raise ValueError(f"ERROR: 'training.mode' must be one of {ALLOWED_VALUES[('training', 'mode')]}.")
 
     if trn["mode"] in ["mixed", "busco_only"]:
         if not trn.get("lineage"):
@@ -58,13 +56,13 @@ def validate_and_fill_config(config_dict):
         raise ValueError("ERROR: 'prediction.species' (Augustus species name) is required.")
         
     prd.setdefault("mode", "full")
-    if prd["mode"] not in ["split", "full"]:
-        raise ValueError("ERROR: 'prediction.mode' must be either 'split' or 'full'.")
+    if prd["mode"] not in ALLOWED_VALUES[("prediction", "mode")]:
+        raise ValueError(f"ERROR: 'prediction.mode' must be one of {ALLOWED_VALUES[('prediction', 'mode')]}.")
     prd.setdefault("utr", True)
     # Tier 2 (Augustus) single-exon noise filter applied by resolve_transcript_tiers.py
     prd.setdefault("filter_mode", "medium")
-    if prd["filter_mode"] not in ["strict", "medium", "none"]:
-        raise ValueError("ERROR: 'prediction.filter_mode' must be one of 'strict', 'medium', or 'none'.")
+    if prd["filter_mode"] not in ALLOWED_VALUES[("prediction", "filter_mode")]:
+        raise ValueError(f"ERROR: 'prediction.filter_mode' must be one of {ALLOWED_VALUES[('prediction', 'filter_mode')]}.")
 
     envs_dir = os.path.abspath(os.path.join(workflow.basedir, "envs"))
 
@@ -79,19 +77,20 @@ def validate_and_fill_config(config_dict):
         config_dict["curation"] = {}
     cur = config_dict["curation"]
     cur.setdefault("data_type","pacbio")
+    if cur["data_type"] not in ALLOWED_VALUES[("curation", "data_type")]:
+        raise ValueError(f"ERROR: 'curation.data_type' must be one of {ALLOWED_VALUES[('curation', 'data_type')]}.")
     if not cur.get("filter_rules") or not os.path.isfile(cur.get("filter_rules")):
         cur["filter_rules"] = os.path.join(envs_dir, "filter_rules.json")
         
     cur.setdefault("mode", "placebo")
-    if cur["mode"] not in ["placebo", "user", "ab_initio"]:
-        raise ValueError("ERROR: 'curation.mode' must be one of 'placebo', 'user', or 'ab_initio'.")
+    if cur["mode"] not in ALLOWED_VALUES[("curation", "mode")]:
+        raise ValueError(f"ERROR: 'curation.mode' must be one of {ALLOWED_VALUES[('curation', 'mode')]}.")
     cur.setdefault("user_gtf", "")
     if cur["mode"] == "user" and not cur["user_gtf"]:
         raise ValueError("ERROR: 'curation.mode' is 'user' but 'curation.user_gtf' is empty.")
-    # The ab initio reference for SQANTI3 is predicted with the trained Augustus model, and
-    # mixed/sqanti_only training needs SQANTI3's output first -> cyclic DAG.
-    if cur["mode"] == "ab_initio" and trn["mode"] != "busco_only":
-        raise ValueError(AB_INITIO_TRAINING_ERROR)
+    mode_error = validate_modes(trn["mode"], cur["mode"])
+    if mode_error:
+        raise ValueError(mode_error)
     
     # 5. evaluation
     if "evaluation" not in config_dict:

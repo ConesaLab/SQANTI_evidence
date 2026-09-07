@@ -2,6 +2,17 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-07] - Idempotent Augustus Species Handling and Deterministic Training Set
+- **Branch**: `dev-IsoQuant`
+- **Commit**: (pending)
+- **Goal**: Roadmap 1.3 and 1.4: reruns behave like first runs, and the training set does not depend on filesystem listing order.
+- **Summary**:
+    - `rule new_species`: fails fast with a clear message if `$AUGUSTUS_CONFIG_PATH/species` is unset or not writable (checked inside the Augustus env, where the variable is defined); logs where the species is created; removed the always-`None` `augustus_dir` param.
+    - `scripts/modify_SC_freq.py`: rewritten. Stop-codon parameters are matched by name and their value column replaced regardless of current content (the old literal `0.33`/`0.34` substitution was a silent no-op on rerun); raises if the three codon frequencies or the three parameter lines are not found; writes a copy of the modified `<species>_parameters.cfg` into the training directory; CLI and Snakemake entry points.
+    - `rule modify_stop_codon_freq`: new `params_cfg` output alongside the `.done` sentinel.
+    - `scripts/busco_complete_aa.py`: sorted directory listing; `rule concatenate_gff`: sorted concatenation. Both keep CD-HIT input order, and therefore cluster representatives and the training set, identical between runs.
+    - `tests/test_modify_SC_freq.py` (7 tests, incl. rerun and non-default template values).
+
 ## [2026-09-07] - Wrapper Exit Code and Configuration Pre-flight Hardening
 - **Branch**: `dev-IsoQuant`
 - **Commit**: (pending)
@@ -9,7 +20,7 @@ This file tracks the history of commits made by the AI agent, providing a high-l
 - **Summary**:
     - `sqanti_evidence`: returns Snakemake's exit code (`sys.exit`), and adds its own directory to `sys.path` so it can be invoked from any working directory.
     - `scripts/input_check.py`: enum validation for `training.mode`, `prediction.mode`, `prediction.filter_mode`, `curation.mode`, `curation.data_type`; `curation.mode: ab_initio` requires `training.mode: busco_only` (explanatory error); `training.lineage` required for `mixed`/`busco_only`; optional files (`hint_config`, `hint_weights`, `filter_rules`, `reference_gtf`, `prediction_genome`) must exist when set; `TypeError` handled in numeric checks; `prediction.species` required; writability check of the tools directory (and of `AUGUSTUS_CONFIG_PATH` if exported) for the Augustus species model.
-    - `rules/setup/functions.smk`: enum checks for `prediction.mode` and `curation.mode`, `user_gtf` required in `user` mode, and the same `ab_initio`/`busco_only` rule so `snakemake -n` reports it instead of a `CyclicGraphException`.
+    - `rules/setup/functions.smk`: imports `ALLOWED_VALUES` and `validate_modes` from `scripts/input_check.py` (single source of truth for enums and the `ab_initio`/`busco_only` rule) so `snakemake -n` reports the explanation instead of a `CyclicGraphException`; `user_gtf` required in `user` mode; `data_type` validated.
     - `tests/test_input_check.py` (15 tests) and `tests/dryrun/configs/busco_only_split_abinitio.yaml` fixture.
 
 ## [2026-09-07] - README Rewrite for the Tier-Resolver Architecture

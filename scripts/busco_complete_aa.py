@@ -17,7 +17,9 @@ def main():
     outfile = snakemake.output[0]
     # The BUSCO output is a individual fasta for each gene that was found in the 
     # genome. All of this fasta are stored in the same path. 
-    archivos = os.listdir(path)
+    # sorted: os.listdir order is filesystem-dependent, and the FASTA order decides which
+    # sequence CD-HIT picks as cluster representative -> keeps the training set reproducible
+    archivos = sorted(os.listdir(path))
     l_records = []
     for archivo in archivos:
         # Protein sequences fasta end with faa while nucleotide sequences 

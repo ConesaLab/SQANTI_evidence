@@ -98,7 +98,8 @@ rule concatenate_gff:
     shell:
         """
         gff_path="{input.busco_path}/run_{params.lineage}/busco_sequences/{params.gene_type}_copy_busco_sequences"
-        cat $gff_path/*.gff > {output} 2> {log}
+        # sorted concatenation so the training set is identical between runs
+        cat $(ls $gff_path/*.gff | sort) > {output} 2> {log}
         """
 
 
@@ -245,7 +246,10 @@ rule gff2genbank:
         """
 
 
-# TODO: Skip this rule if the directory of the new species exist
+# Creates the Augustus species from the generic template. The species directory lives in
+# $AUGUSTUS_CONFIG_PATH/species/<name> (set by the Augustus conda env, i.e. inside toolsdir), not in
+# outdir. Any previous copy is removed so retraining always starts from the template; the .done
+# sentinel keeps Snakemake from redoing this unless the training GenBank changed.
 rule new_species:
     input:
         gen_bank=os.path.join(dir.out.ab_augustus_model, "training_genes.gb"),
@@ -266,11 +270,16 @@ rule new_species:
         runtime=config.resources.small.time,
     params:
         name=config.prediction.species,
-        augustus_dir=os.environ.get("AUGUSTUS_CONFIG_PATH"),
     shell:
         """
-        rm -rf $AUGUSTUS_CONFIG_PATH/species/{params.name}
-        new_species.pl --species={params.name} &> {log}
+        if [ -z "$AUGUSTUS_CONFIG_PATH" ] || [ ! -w "$AUGUSTUS_CONFIG_PATH/species" ]; then
+            echo "ERROR: AUGUSTUS_CONFIG_PATH/species ('${{AUGUSTUS_CONFIG_PATH:-unset}}/species') is not writable;" \
+                 "cannot create the Augustus species '{params.name}'." | tee {log} >&2
+            exit 1
+        fi
+        echo "Creating Augustus species '{params.name}' in $AUGUSTUS_CONFIG_PATH/species/{params.name}" > {log}
+        rm -rf "$AUGUSTUS_CONFIG_PATH/species/{params.name}"
+        new_species.pl --species={params.name} &>> {log}
         """
 
 
@@ -355,13 +364,15 @@ rule extract_stop_codon_freq:
         "tail -6 {input} | head -3 > {output}"
 
 
-# TODO: Rewrite this rule to be adapted to snakemake nature. It creates a new file and then substitutes the frequency one.
-# TODO: Find a way to give the shell variable AUGUSUTUS_CONFIG_PATH directly to the file
+# Writes the observed stop-codon frequencies into the species parameters file (in
+# $AUGUSTUS_CONFIG_PATH, outside outdir) and keeps a copy of the modified file in the training
+# directory so the run is inspectable. The .done sentinel is what downstream rules depend on.
 rule modify_stop_codon_freq:
     input:
         train=os.path.join(dir.out.ab_augustus_training, "SC_freq.txt"),
     output:
         mod=os.path.join(dir.out.ab_augustus_training, "SC_freq_mod.done"),
+        params_cfg=os.path.join(dir.out.ab_augustus_training, f"{config.prediction.species}_parameters.cfg"),
     log:
         os.path.join(dir.logs, "modify_stop_codon_freq.log"),
     conda:

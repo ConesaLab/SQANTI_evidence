@@ -50,6 +50,16 @@ AB_INITIO_TRAINING_ERROR = (
 )
 
 
+def validate_modes(training_mode, curation_mode):
+    """
+    Single source of truth for constraints between modes. Returns an error message or None.
+    Used by the pre-flight check (wrapper) and by rules/setup/functions.smk (Snakemake parse time).
+    """
+    if curation_mode == "ab_initio" and training_mode != "busco_only":
+        return AB_INITIO_TRAINING_ERROR
+    return None
+
+
 def die(msg):
     logger.error(msg)
     sys.exit(1)
@@ -149,8 +159,9 @@ def check_inputs(config):
     training_mode = trn.get("mode", "mixed")
     curation_mode = cur.get("mode", "placebo")
 
-    if curation_mode == "ab_initio" and training_mode != "busco_only":
-        die(AB_INITIO_TRAINING_ERROR)
+    mode_error = validate_modes(training_mode, curation_mode)
+    if mode_error:
+        die(mode_error)
 
     if training_mode in ["mixed", "busco_only"] and not trn.get("lineage"):
         die(f"ERROR: 'training.lineage' (BUSCO lineage) is required when training.mode is '{training_mode}'.")

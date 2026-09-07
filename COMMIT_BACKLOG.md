@@ -2,6 +2,35 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-07] - README Rewrite for the Tier-Resolver Architecture
+- **Branch**: `dev-IsoQuant`
+- **Commit**: (pending)
+- **Goal**: Make the only version-controlled document describe the current pipeline (roadmap item 0.7).
+- **Summary**:
+    - Rewrote `README.md`: dual-track (Tier 1 / Tier 2) overview, correct installation (`conda env create -f env.yaml`), 6-block configuration tables matching `config.yaml`, IsoQuant input expectations, 8-step workflow including tier resolution, output tree, testing section, tool citations.
+    - Renamed the conda environment in `env.yaml` from `wapisimo` to `sqanti_evidence`.
+
+## [2026-09-07] - Config Template, Validator, Logger and DAG Regression Test (`f27d35f`)
+- **Branch**: `dev-IsoQuant`
+- **Commit**: `f27d35f`
+- **Goal**: Facewash items 0.3–0.6 of the stabilisation roadmap: dead configuration removed, Garnatxa resource convention adopted, working dry-run test, rule tidy-up.
+- **Summary**:
+    - `config.yaml`: `hint_weights` points to the existing default cfg; personal `toolsdir` replaced by a placeholder; `prediction.filter_mode` and `curation.data_type` documented; unused `small_bigMem` tier removed.
+    - `rules/setup/functions.smk`: resource defaults use `mem: "8GB"` / `time: "2h"`; `mem_mb`/`time_min` rewrite path deleted; missing resource keys filled per tier; `filter_mode` validation aligned with `resolve_transcript_tiers.py` (`strict`/`medium`/`none`, default `medium`).
+    - `rules/setup/logging_setup.smk`: fixed wrong keys (`miniprot_id`, `flanking`) and extended the configuration summary.
+    - `tests/dryrun/`: fixtures, six configs (3 training × 2 prediction modes) and `run_dryruns.sh` as the DAG regression test; outputs gitignored.
+    - `rules/split_augustus.smk`: `ed_augusuts_per_chromosome` renamed to `ed_augustus_per_chromosome`; the file is now included once from `snakefile` instead of from both `ab_initio.smk` and `evidence_driven.smk`; scope comment added to `ab_initio.smk`.
+
+## [2026-09-07] - Remove Orphaned Iso-Seq, TSEBRA and Legacy Files (`dc36bb7`)
+- **Branch**: `dev-IsoQuant`
+- **Commit**: `dc36bb7`
+- **Goal**: Facewash item 0.2: delete code no rule references.
+- **Summary**:
+    - Deleted `rules/isoseq.smk`; TSEBRA leftovers (`scripts/genome_anno.py`, `scripts/evidence.py`, `scripts/filter_monoexons.py`, `envs/tsebra.yaml`, `envs/tsebra.cfg`); Iso-Seq era files (`scripts/fastq2bam.py`, `scripts/create_tama_filelist.py`, `scripts/rename_lima_output.py`, `envs/tama.yaml`, `envs/isoseq.yaml`, `envs/minimap2.yaml`, `envs/pacbio_mock.bam`); superseded training scripts (`scripts/concatenate_GFF.py`, `scripts/generate_subset.py`, `scripts/filterClassification.R`); old-schema `.dummy_config.yaml`.
+    - Moved `scripts/download_sm_genomes.sh` to `genomes_benchmark/bin/` (outside version control).
+    - Removed the dangling `prediction.tsebra_config` default from `config.yaml` and `functions.smk`.
+    - Kept `envs/extrinsic.M.RM.PB.cfg` (valid low-bonus preset declaring `lrRNA` and `P`).
+
 ## [2026-09-03] - Integrate Snakemake-Native Hierarchical Tier Resolver
 - **Branch**: `dev-IsoQuant`
 - **Commit**: `7c678b7`

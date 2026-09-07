@@ -2,6 +2,13 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-07] - Configurable Miniprot Options for Self-Protein Hints
+- **Branch**: `dev-IsoQuant`
+- **Goal**: Make the Miniprot call configurable so the paralog-recovery experiment (`--outs`) can be run from a config file without editing rules.
+- **Summary**:
+    - Diagnosis on the Arabidopsis run: Miniprot 0.18 only writes secondary alignments scoring >= `--outs` x best (default 0.99), so `-N 5 -p 0.6` produced 12,620 alignments for 12,447 proteins and only 0.2% of `src=P` hints fell outside Tier 1 loci; 10,866 of 10,894 Tier 2 transcripts had no hint support (47% exact CDS match vs 86-90% where P hints exist).
+    - New config key `prediction.miniprot_args` (default `"-N 5 -p 0.6"`, i.e. unchanged behaviour) consumed by `rule align_proteins_miniprot`; documented in `config.yaml`, `README.md`, and the configuration log summary.
+
 ## [2026-09-07] - Idempotent Augustus Species Handling and Deterministic Training Set
 - **Branch**: `dev-IsoQuant`
 - **Commit**: (pending)

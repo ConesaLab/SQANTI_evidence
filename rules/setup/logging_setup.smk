@@ -144,6 +144,7 @@ def log_config_summary(logger, config):
     logger.info(f"  Tier 2 monoexon filter: {config.prediction.filter_mode}")
     logger.info(f"  Hint config: {config.prediction.hint_config}")
     logger.info(f"  Hint weights: {config.prediction.hint_weights}")
+    logger.info(f"  Miniprot args: {config.prediction.miniprot_args}")
     
     # Curation parameters
     logger.info("Curation Configuration:")

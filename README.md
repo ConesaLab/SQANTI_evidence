@@ -109,6 +109,7 @@ Controls how the Augustus species model is trained.
 | `filter_mode` | Filter for single-exon Augustus genes added as Tier 2: `strict` (must be supported by a hint), `medium` (default; at least 300 bp or hint-supported), `none`. |
 | `hint_config` | TSV switching hint types on/off (default `envs/hint_config.tsv`). |
 | `hint_weights` | Augustus extrinsic configuration with the bonus/malus per hint source (default `envs/extrinsic.hints_weights_default.cfg`). |
+| `miniprot_args` | Options passed to Miniprot when aligning the dominant proteins back to the genome for `src=P` hints (default `-N 5 -p 0.6`). Miniprot writes secondary alignments only above `--outs` (default 0.99), so paralog recovery needs e.g. `-N 30 -p 0.6 --outs=0.5`. |
 
 ### `curation`
 

@@ -38,9 +38,11 @@ rule align_proteins_miniprot:
         cpus_per_task=config.resources.small.cpus,
         mem=config.resources.small.mem,
         runtime=config.resources.small.time,
+    params:
+        miniprot_args=config.prediction.miniprot_args,
     shell:
         """
-        miniprot --gff -t {threads} -N 5 -p 0.6 {input.genome} {input.proteins} > {output.miniprot_gff} 2> {log}
+        miniprot --gff -t {threads} {params.miniprot_args} {input.genome} {input.proteins} > {output.miniprot_gff} 2> {log}
         """
 
 

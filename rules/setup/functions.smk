@@ -72,6 +72,11 @@ def validate_and_fill_config(config_dict):
     if not prd.get("hint_weights") or not os.path.isfile(prd.get("hint_weights")):
         prd["hint_weights"] = os.path.join(envs_dir, "extrinsic.hints_weights_default.cfg")
 
+    # Extra Miniprot options for the self-protein alignment that feeds src=P hints.
+    # NOTE: Miniprot only *writes* secondary alignments scoring >= --outs * best (default 0.99),
+    # so paralog recovery requires lowering --outs (e.g. "-N 30 -p 0.6 --outs=0.5").
+    prd.setdefault("miniprot_args", "-N 5 -p 0.6")
+
     # 4. curation
     if "curation" not in config_dict:
         config_dict["curation"] = {}

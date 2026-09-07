@@ -1,6 +1,14 @@
 import os
 import logging
 
+AB_INITIO_TRAINING_ERROR = (
+    "ERROR: 'curation.mode' is 'ab_initio' but 'training.mode' is not 'busco_only'. "
+    "To generate an ab initio annotation for SQANTI3 to classify against, the Augustus gene model "
+    "must be trained using only BUSCO genes: the SQANTI3-derived training genes ('mixed' or "
+    "'sqanti_only') do not exist yet at that point, which makes the workflow circular. "
+    "Set training.mode: busco_only, or use curation.mode: placebo / user."
+)
+
 def validate_and_fill_config(config_dict):
     """
     Validates hierarchical parameters and fills in default values.
@@ -50,6 +58,8 @@ def validate_and_fill_config(config_dict):
         raise ValueError("ERROR: 'prediction.species' (Augustus species name) is required.")
         
     prd.setdefault("mode", "full")
+    if prd["mode"] not in ["split", "full"]:
+        raise ValueError("ERROR: 'prediction.mode' must be either 'split' or 'full'.")
     prd.setdefault("utr", True)
     # Tier 2 (Augustus) single-exon noise filter applied by resolve_transcript_tiers.py
     prd.setdefault("filter_mode", "medium")
@@ -73,7 +83,15 @@ def validate_and_fill_config(config_dict):
         cur["filter_rules"] = os.path.join(envs_dir, "filter_rules.json")
         
     cur.setdefault("mode", "placebo")
+    if cur["mode"] not in ["placebo", "user", "ab_initio"]:
+        raise ValueError("ERROR: 'curation.mode' must be one of 'placebo', 'user', or 'ab_initio'.")
     cur.setdefault("user_gtf", "")
+    if cur["mode"] == "user" and not cur["user_gtf"]:
+        raise ValueError("ERROR: 'curation.mode' is 'user' but 'curation.user_gtf' is empty.")
+    # The ab initio reference for SQANTI3 is predicted with the trained Augustus model, and
+    # mixed/sqanti_only training needs SQANTI3's output first -> cyclic DAG.
+    if cur["mode"] == "ab_initio" and trn["mode"] != "busco_only":
+        raise ValueError(AB_INITIO_TRAINING_ERROR)
     
     # 5. evaluation
     if "evaluation" not in config_dict:

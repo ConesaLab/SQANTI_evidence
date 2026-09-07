@@ -2,6 +2,16 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-07] - Wrapper Exit Code and Configuration Pre-flight Hardening
+- **Branch**: `dev-IsoQuant`
+- **Commit**: (pending)
+- **Goal**: Roadmap 1.1 and 1.2: make failures visible to Slurm chaining and reject invalid configurations before Snakemake starts.
+- **Summary**:
+    - `sqanti_evidence`: returns Snakemake's exit code (`sys.exit`), and adds its own directory to `sys.path` so it can be invoked from any working directory.
+    - `scripts/input_check.py`: enum validation for `training.mode`, `prediction.mode`, `prediction.filter_mode`, `curation.mode`, `curation.data_type`; `curation.mode: ab_initio` requires `training.mode: busco_only` (explanatory error); `training.lineage` required for `mixed`/`busco_only`; optional files (`hint_config`, `hint_weights`, `filter_rules`, `reference_gtf`, `prediction_genome`) must exist when set; `TypeError` handled in numeric checks; `prediction.species` required; writability check of the tools directory (and of `AUGUSTUS_CONFIG_PATH` if exported) for the Augustus species model.
+    - `rules/setup/functions.smk`: enum checks for `prediction.mode` and `curation.mode`, `user_gtf` required in `user` mode, and the same `ab_initio`/`busco_only` rule so `snakemake -n` reports it instead of a `CyclicGraphException`.
+    - `tests/test_input_check.py` (15 tests) and `tests/dryrun/configs/busco_only_split_abinitio.yaml` fixture.
+
 ## [2026-09-07] - README Rewrite for the Tier-Resolver Architecture
 - **Branch**: `dev-IsoQuant`
 - **Commit**: (pending)

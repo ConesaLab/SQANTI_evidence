@@ -5,7 +5,7 @@ import logging
 # Shared validation tables/messages live in scripts/input_check.py (plain Python, no Snakemake
 # dependency) so the wrapper pre-flight and this parse-time validation cannot drift apart.
 sys.path.insert(0, os.path.join(workflow.basedir, "scripts"))
-from input_check import ALLOWED_VALUES, validate_modes
+from input_check import ALLOWED_VALUES, validate_modes, validate_isoquant_args
 
 def validate_and_fill_config(config_dict):
     """
@@ -82,6 +82,13 @@ def validate_and_fill_config(config_dict):
         config_dict["curation"] = {}
     cur = config_dict["curation"]
     cur.setdefault("data_type","pacbio")
+    # Extra IsoQuant options appended verbatim (e.g. "--polya_trimmed all --stranded forward" for
+    # Iso-Seq FLNC reads, whose poly(A) tails were removed by `isoseq refine`; without a tail IsoQuant
+    # cannot build novel mono-exon transcripts). Options the rule sets itself are rejected by input_check.
+    cur.setdefault("isoquant_args", "")
+    iq_error = validate_isoquant_args(cur["isoquant_args"])
+    if iq_error:
+        raise ValueError(iq_error)
     if cur["data_type"] not in ALLOWED_VALUES[("curation", "data_type")]:
         raise ValueError(f"ERROR: 'curation.data_type' must be one of {ALLOWED_VALUES[('curation', 'data_type')]}.")
     if not cur.get("filter_rules") or not os.path.isfile(cur.get("filter_rules")):

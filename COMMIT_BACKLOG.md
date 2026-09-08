@@ -2,6 +2,15 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-08] - `curation.isoquant_args`: Pass-Through Options for IsoQuant
+- **Branch**: `dev-IsoQuant`
+- **Goal**: Let users customise IsoQuant without adding a pipeline key per edge case. First use: Iso-Seq FLNC reads have their poly(A) tails removed by `isoseq refine`; IsoQuant (3.10 and 3.13.1 checked) builds novel mono-exon transcripts only from reads with a detected tail and uses the tail as the only strand evidence for unspliced reads, so on Arabidopsis 3 of 15,080 models were mono-exon and Tier 1 contained no single-exon gene. `--polya_trimmed all` (artificial poly(A) at the read 3′ end from the mapped strand; valid for 5′→3′-oriented reads only) is the fix; `--polya_requirement never` would not have helped (it only relaxes reference mono-exon isoforms).
+- **Summary**:
+    - New key `curation.isoquant_args` (default `""`), appended verbatim to the `isoquant` call in `rule run_isoquant`.
+    - `scripts/input_check.py`: `validate_isoquant_args()` rejects options the rule already sets (`--reference/-r`, `--data_type/-d`, `--prefix/-p`, `--threads/-t`, `-o/--output`, input flags); enforced both pre-flight and at Snakemake parse time via the shared module.
+    - Documented in `config.yaml` and `README.md` with the FLNC example `"--polya_trimmed all --stranded forward"` and the orientation caveat; logged in the configuration summary. Tests: +8 (60 total).
+    - Design decision (Pablo): no dedicated key for `--polya_trimmed`; users add it through `isoquant_args`.
+
 ## [2026-09-08] - Split-Mode Augustus Rules: QoS and Runtime From the Same Tier
 - **Branch**: `dev-IsoQuant`
 - **Goal**: Fix the human full run failing at submission with `QOSMaxWallDurationPerJobLimit`.

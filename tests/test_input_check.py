@@ -141,3 +141,19 @@ def test_unwritable_augustus_config_path_dies(base_config, tmp_path, monkeypatch
         assert "AUGUSTUS_CONFIG_PATH" in caplog.text
     finally:
         (ro / "species").chmod(0o755)
+
+
+@pytest.mark.parametrize("extra", ["", "--polya_trimmed all --stranded forward", "--fl_data --polya_requirement never"])
+def test_isoquant_args_accepted(base_config, monkeypatch, extra):
+    monkeypatch.delenv("AUGUSTUS_CONFIG_PATH", raising=False)
+    cfg = copy.deepcopy(base_config)
+    cfg["curation"]["isoquant_args"] = extra
+    input_check.check_inputs(cfg)
+
+
+@pytest.mark.parametrize("extra", ["--threads 4", "-o elsewhere", "--data_type nanopore", "--fastq reads.fq", "--reference=x.fa"])
+def test_isoquant_args_reserved_options_rejected(base_config, extra, caplog):
+    cfg = copy.deepcopy(base_config)
+    cfg["curation"]["isoquant_args"] = extra
+    expect_die(cfg, "isoquant_args")
+    assert "curation.isoquant_args" in caplog.text

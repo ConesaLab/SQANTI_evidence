@@ -20,7 +20,8 @@ rule run_isoquant:
         input_flag = lambda wildcards, input: get_isoquant_input_flag(input.reads),
         outdir = dir.out.isoquant,
         data_type = config.curation.data_type,
-        prefix = sample
+        prefix = sample,
+        extra = config.curation.isoquant_args
     log:
         os.path.join(dir.logs, "isoquant.log")
     shell:
@@ -31,6 +32,7 @@ rule run_isoquant:
             --data_type {params.data_type} \
             --prefix {params.prefix} \
             --threads {threads} \
+            {params.extra} \
             -o {params.outdir} &> {log}
         """
 

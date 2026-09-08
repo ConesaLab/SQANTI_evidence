@@ -150,6 +150,7 @@ def log_config_summary(logger, config):
     logger.info("Curation Configuration:")
     logger.info(f"  Mode: {config.curation.mode}")
     logger.info(f"  Data type: {config.curation.data_type}")
+    logger.info(f"  IsoQuant extra args: {config.curation.isoquant_args or '(none)'}")
     logger.info(f"  Filter rules: {config.curation.filter_rules}")
     
     # Evaluation parameters

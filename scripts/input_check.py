@@ -41,6 +41,25 @@ OPTIONAL_FILES = [
     ("evaluation", "reference_gtf"),
 ]
 
+# Options run_isoquant sets itself; passing them again through curation.isoquant_args is rejected.
+ISOQUANT_RESERVED_OPTIONS = ["--reference", "-r", "--data_type", "-d", "--prefix", "-p", "--threads", "-t",
+                             "-o", "--output", "--fastq", "--bam", "--unmapped_bam", "--fastq_list", "--bam_list"]
+
+
+def validate_isoquant_args(extra):
+    """Returns an error message if curation.isoquant_args repeats an option the rule already sets, else None."""
+    if not extra:
+        return None
+    if not isinstance(extra, str):
+        return f"ERROR: 'curation.isoquant_args' must be a string (current: {extra!r})"
+    tokens = [t.split("=")[0] for t in extra.split()]
+    clashes = [t for t in tokens if t in ISOQUANT_RESERVED_OPTIONS]
+    if clashes:
+        return (f"ERROR: 'curation.isoquant_args' must not contain {clashes}: the pipeline already sets "
+                "the reference, input, data type, prefix, threads and output directory for IsoQuant.")
+    return None
+
+
 AB_INITIO_TRAINING_ERROR = (
     "ERROR: 'curation.mode' is 'ab_initio' but 'training.mode' is not 'busco_only'. "
     "To generate an ab initio annotation for SQANTI3 to classify against, the Augustus gene model "
@@ -162,6 +181,10 @@ def check_inputs(config):
     mode_error = validate_modes(training_mode, curation_mode)
     if mode_error:
         die(mode_error)
+
+    iq_error = validate_isoquant_args(cur.get("isoquant_args", ""))
+    if iq_error:
+        die(iq_error)
 
     if training_mode in ["mixed", "busco_only"] and not trn.get("lineage"):
         die(f"ERROR: 'training.lineage' (BUSCO lineage) is required when training.mode is '{training_mode}'.")

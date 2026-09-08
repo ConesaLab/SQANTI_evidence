@@ -30,6 +30,11 @@ curation:
   mode: "placebo"                 # Reference given to SQANTI3: ab_initio, placebo, user
   user_gtf: ""                    # Path to custom GTF if mode is 'user'
   data_type: "pacbio"             # IsoQuant --data_type: pacbio (CCS/HiFi), nanopore, assembly
+  isoquant_args: ""               # Extra IsoQuant options, passed verbatim. Iso-Seq FLNC reads have their
+                                  #   poly(A) tails removed by `isoseq refine`, and IsoQuant needs a tail to
+                                  #   build novel single-exon transcripts and to strand unspliced reads; for
+                                  #   such oriented reads use "--polya_trimmed all --stranded forward".
+                                  #   (--polya_trimmed all assumes reads oriented 5'->3'; not for raw ONT cDNA.)
   filter_rules: "envs/filter_rules.json"
 
 evaluation:

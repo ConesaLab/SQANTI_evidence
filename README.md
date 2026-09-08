@@ -118,6 +118,7 @@ Controls how the Augustus species model is trained.
 | `mode` | Reference annotation given to SQANTI3. `placebo` (default): a dummy annotation, so that classification is reference-independent. `user`: the GTF in `user_gtf`. `ab_initio`: an ab initio Augustus prediction, only possible together with `training.mode: busco_only`. |
 | `user_gtf` | Reference GTF when `mode` is `user`. |
 | `data_type` | Sequencing technology passed to IsoQuant: `pacbio` (CCS/HiFi, default), `nanopore`, or `assembly`. |
+| `isoquant_args` | Extra options appended verbatim to the IsoQuant command (default empty). Options the pipeline sets itself, such as `--reference`, `--data_type`, `--prefix`, `--threads`, `-o` and the input flag, are rejected. Typical use: Iso-Seq FLNC reads have their poly(A) tails removed by `isoseq refine`, and IsoQuant needs a tail to build novel single-exon transcripts and to strand unspliced reads; for these oriented reads set `"--polya_trimmed all --stranded forward"`. `--polya_trimmed all` assumes reads oriented 5'→3', so do not use it for raw ONT cDNA. |
 | `filter_rules` | SQANTI3 rules-filter JSON (default `envs/filter_rules.json`). The default rules avoid structural categories so that filtering does not depend on the reference used. |
 
 ### `evaluation`

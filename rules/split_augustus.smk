@@ -32,8 +32,11 @@ rule ed_augustus_per_chromosome:
     params:
         name = config.prediction.species,
         extcfg = config.prediction.hint_weights if config.prediction.hint_weights and os.path.isfile(config.prediction.hint_weights) else f"{dir.envs}/extrinsic.M.RM.PB.cfg"
+    # Long walltime for the largest chromosomes but small CPU/memory footprint (Augustus is
+    # single-threaded, ~2.5 GB on human chr1). QoS and runtime must come from the SAME tier:
+    # a 'short' QoS with the 'big' runtime was rejected by Slurm (QOSMaxWallDurationPerJobLimit).
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
+        slurm_extra = f"\'--qos={config.resources.big.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
         runtime = config.resources.big.time
@@ -98,7 +101,7 @@ rule ab_augustus_per_chromosome:
     params:
         name = config.prediction.species,
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
+        slurm_extra = f"\'--qos={config.resources.big.qos}\'",   # same tier as runtime (see above)
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
         runtime = config.resources.big.time

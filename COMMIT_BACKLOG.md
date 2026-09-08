@@ -2,6 +2,11 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-08] - Split-Mode Augustus Rules: QoS and Runtime From the Same Tier
+- **Branch**: `dev-IsoQuant`
+- **Goal**: Fix the human full run failing at submission with `QOSMaxWallDurationPerJobLimit`.
+- **Summary**: `rules/split_augustus.smk` (`ed_augustus_per_chromosome`, `ab_augustus_per_chromosome`) requested `--qos` from the `small` tier (`short`, 1-day limit) but `runtime` from the `big` tier. With `big.time: 24h` this sat exactly at the limit; the human config raised `big.time` to 48h for IsoQuant and every Augustus job was rejected. Both rules now take QoS and runtime from `big`; CPU/memory stay on `small` (Augustus is single-threaded, ~2.5 GB). Audited the other rules: no other qos/runtime tier mix.
+
 ## [2026-09-07] - Miniprot Alignment Rule on the Medium Resource Tier
 - **Branch**: `dev-IsoQuant`
 - **Goal**: Prepare the human full run: `align_proteins_miniprot` used the `small` tier (2 CPUs / 8 GB), enough for Arabidopsis but not for indexing a 3 Gb genome.

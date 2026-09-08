@@ -148,11 +148,11 @@ def extract_and_write_data(
                     for _, _, s, e in coords
                 )
 
-            # Translate CDS
-            try:
-                prot_seq = str(Seq(cds_nuc).translate(to_stop=True))
-            except Exception as e:
-                prot_seq = str(Seq(cds_nuc).translate()).rstrip("*")
+            # Translate CDS (SQANTI CDS coordinates include the stop codon; to_stop drops it)
+            if len(cds_nuc) % 3 != 0:
+                sys.stderr.write(f"WARNING: CDS length of {tx_id} is not a multiple of 3 ({len(cds_nuc)} nt); "
+                                 "translating up to the last complete codon\n")
+            prot_seq = str(Seq(cds_nuc[: len(cds_nuc) - len(cds_nuc) % 3]).translate(to_stop=True))
 
             gene_id = selected_txs.get(tx_id, tx_id)
             out_faa.write(f">{gene_id} {tx_id}\n{prot_seq}\n")
@@ -168,9 +168,9 @@ def main():
     out_gff = snakemake.output.gff
     out_faa = snakemake.output.faa
 
-    # Ensure output directories exist
-    os.makedirs(os.path.dirname(out_gff), exist_ok=True)
-    os.makedirs(os.path.dirname(out_faa), exist_ok=True)
+    # Ensure output directories exist (dirname is '' for a bare filename)
+    for out_path in (out_gff, out_faa):
+        os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
 
     selected_txs = select_dominant_transcripts(class_file)
     extract_and_write_data(gtf_file, selected_txs, genome_file, out_gff, out_faa)

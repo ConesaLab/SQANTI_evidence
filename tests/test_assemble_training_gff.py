@@ -147,3 +147,8 @@ def test_real_busco_ids_match_cdhit_representatives(tmp_path):
     sel_b, sel_s = atg.assemble_training_genes(atg.parse_cdhit_list(str(cdhit)), b_order, b_dict, s_order, s_dict,
                                                max_genes=5000, strategy="busco_core")
     assert sel_b == ["10052at3699"] and sel_s == ["novelGene_1"]
+
+
+def test_unknown_strategy_raises():
+    with pytest.raises(ValueError, match="Unknown training-set assembly strategy"):
+        atg.assemble_training_genes({"b1"}, ["b1"], {"b1": []}, [], {}, max_genes=10, strategy="random_pick")

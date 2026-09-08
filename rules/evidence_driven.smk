@@ -16,8 +16,6 @@ rule extract_rna_hints:
         cpus_per_task=config.resources.small.cpus,
         mem=config.resources.small.mem,
         runtime=config.resources.small.time,
-    params:
-        utr=config.prediction.utr,
     script:
         os.path.join(dir.scripts, "generate_hints.py")
 

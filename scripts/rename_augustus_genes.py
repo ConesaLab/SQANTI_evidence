@@ -4,6 +4,7 @@ import re
 def main():
     first_header = True
     info_line = False
+    gene_name = None  # set on each 'gene' line; features before the first gene line are left untouched
     with open(snakemake.output[0], "w") as outf:
         # Open the Augustus output file
         with open(snakemake.input[0]) as f:
@@ -27,7 +28,7 @@ def main():
                         columns[8] = f"{chr}_{columns[8]}"
                     elif columns[2] == "transcript":
                         columns[8] = f"{chr}_{columns[8]}"
-                    else:
+                    elif gene_name is not None:
                         columns[8] = columns[8].replace(f'\"{gene_name}',f'\"{chr}_{gene_name}')
                         
                     outf.write("\t".join(columns))

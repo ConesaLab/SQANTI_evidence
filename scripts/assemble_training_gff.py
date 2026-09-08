@@ -179,6 +179,12 @@ def assemble_training_genes(
             extra_slots = max_genes - (len(selected_busco) + len(selected_sqanti))
             selected_busco.extend(valid_busco_reps[len(selected_busco) : len(selected_busco) + extra_slots])
 
+    else:
+        raise ValueError(
+            f"Unknown training-set assembly strategy {strategy!r}; expected one of "
+            "busco_core, busco_only, sqanti_only, sqanti_priority, proportional"
+        )
+
     total_selected = len(selected_busco) + len(selected_sqanti)
     sys.stderr.write(f"### Assembled BUSCO core genes: {len(selected_busco)}\n")
     sys.stderr.write(f"### Assembled SQANTI empirical genes: {len(selected_sqanti)}\n")

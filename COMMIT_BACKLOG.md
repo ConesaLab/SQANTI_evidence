@@ -2,6 +2,17 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-08] - Script Robustness (roadmap 1.7)
+- **Branch**: `dev-IsoQuant`
+- **Goal**: Remove silent failure modes in the custom scripts without changing their outputs.
+- **Summary**:
+    - `scripts/generate_hints.py`: rewritten around testable functions. Transcripts are collected per `transcript_id` (no longer relies on the GTF being grouped; first-appearance order kept), `hint_config.tsv` parsing skips blank lines and rejects unknown features or non-boolean values naming file and line, summary line with transcript/hint counts. Hint logic unchanged; **byte-identical** to the production Arabidopsis RNA hints (195,071 lines). Classification column lookups deliberately left as-is (Pablo maintains the column names). Verified on Arabidopsis that SQANTI CDS coordinates include the stop codon (3,300/3,302 complete ORFs), so the start/stop hint placement is correct.
+    - `rules/evidence_driven.smk`: removed the dead `utr` param of `extract_rna_hints` (never read; `hint_config.tsv` is the single switch).
+    - `scripts/select_dominant_isoforms.py`: dead `except` around translation replaced by an explicit warning for CDS lengths not multiple of 3; output dirs created from absolute paths (bare filenames no longer crash).
+    - `scripts/assemble_training_gff.py`: unknown `strategy` now raises instead of returning an empty training set.
+    - `scripts/rename_augustus_genes.py`: `gene_name` initialised; features before the first gene line are passed through unchanged instead of raising.
+    - Tests: new `tests/test_generate_hints.py` (14 tests: both strands, complete/partial ORFs, CDS-span intron restriction, exon/exonpart toggles, ungrouped GTF, config parsing and errors, end-to-end with the repo default config) + 1 for the strategy error; 78 total.
+
 ## [2026-09-08] - `curation.isoquant_args`: Pass-Through Options for IsoQuant
 - **Branch**: `dev-IsoQuant`
 - **Goal**: Let users customise IsoQuant without adding a pipeline key per edge case. First use: Iso-Seq FLNC reads have their poly(A) tails removed by `isoseq refine`; IsoQuant (3.10 and 3.13.1 checked) builds novel mono-exon transcripts only from reads with a detected tail and uses the tail as the only strand evidence for unspliced reads, so on Arabidopsis 3 of 15,080 models were mono-exon and Tier 1 contained no single-exon gene. `--polya_trimmed all` (artificial poly(A) at the read 3′ end from the mapped strand; valid for 5′→3′-oriented reads only) is the fix; `--polya_requirement never` would not have helped (it only relaxes reference mono-exon isoforms).

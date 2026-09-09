@@ -182,7 +182,7 @@ outdir/
 │       │                               training_genes.gff, cdhit.lst
 │       └── training/                   etraining logs, bad.lst, filtered.gb, SC_freq.txt
 ├── evidence_driven/
-│   ├── sqanti/                         <species>_classification.txt, <species>.filtered.gtf, ...
+│   ├── sqanti/                         <species>_classification.txt, <species>.filtered.gtf, <species>.filtered.regrouped.gtf (IsoQuant gene grouping restored), ...
 │   ├── hints/                          <species>.rna.hints.gff, <species>.protein.hints.gff,
 │   │                                   <species>.hints.gff (combined)
 │   ├── augustus/                       Augustus_prediction.gff, resolved_prediction.gtf (Tier 1 + Tier 2)

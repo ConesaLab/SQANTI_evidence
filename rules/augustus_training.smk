@@ -12,8 +12,8 @@ localrules:
 
 rule select_dominant_sqanti_genes:
     input:
-        gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
-        classification=os.path.join(dir.out.ed_sqanti, f"{sp_name}_RulesFilter_classification.txt"),
+        gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.regrouped.gtf"),
+        classification=os.path.join(dir.out.ed_sqanti, f"{sp_name}_RulesFilter_classification.regrouped.txt"),
         genome=config.project.genome,
     output:
         gff=os.path.join(dir.out.ab_augustus_model, "sqanti_dominant.gff"),

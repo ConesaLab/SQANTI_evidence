@@ -92,3 +92,31 @@ rule filter_isoforms:
             -j {params.json_rules} --dir {dir.out.ed_sqanti} --skip_report \
             --output {params.sp_name} &> {log}
         """
+
+
+rule restore_gene_ids:
+    """Put the transcript-model gene grouping back after SQANTI3.
+
+    SQANTI3 gives every intergenic isoform its own novelGene id; against the placebo reference
+    that is every isoform, so the filtered GTF has one gene per transcript. The IsoQuant
+    gene_id is restored per transcript_id (GTF and RulesFilter classification), so gene
+    counts and the dominant-isoform selection see real genes again.
+    """
+    input:
+        models=os.path.join(dir.out.isoquant, sample, f"{sample}.transcript_models.gtf"),
+        gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
+        classification=os.path.join(dir.out.ed_sqanti, f"{sp_name}_RulesFilter_classification.txt"),
+    output:
+        gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.regrouped.gtf"),
+        classification=os.path.join(dir.out.ed_sqanti, f"{sp_name}_RulesFilter_classification.regrouped.txt"),
+    log:
+        os.path.join(dir.logs, "restore_gene_ids.log"),
+    conda:
+        os.path.join(dir.envs, "basic.yaml")
+    resources:
+        slurm_extra=f"'--qos={config.resources.small.qos}'",
+        cpus_per_task=config.resources.small.cpus,
+        mem=config.resources.small.mem,
+        runtime=config.resources.small.time,
+    script:
+        os.path.join(dir.scripts, "restore_gene_ids.py")

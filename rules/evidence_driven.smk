@@ -4,7 +4,7 @@ sp_name = config.prediction.species
 
 rule extract_rna_hints:
     input:
-        gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
+        gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.regrouped.gtf"),
         classification=os.path.join(dir.out.ed_sqanti, f"{sp_name}_classification.txt"),
         hint_config=config.prediction.hint_config,
     output:
@@ -119,7 +119,7 @@ if config.prediction.mode != "split":
 
 rule resolve_transcript_tiers:
     input:
-        sqanti_gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
+        sqanti_gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.regrouped.gtf"),
         augustus_gff=os.path.join(dir.out.ed_augustus, "Augustus_prediction.gff"),
         hints=os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff"),
     output:

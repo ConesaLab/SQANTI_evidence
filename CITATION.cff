@@ -11,11 +11,11 @@ authors:
     given-names: Pablo
     email: pablo.atienza@csic.es
     affiliation: "Institute for Integrative Systems Biology (I2SysBio), CSIC-UV, Valencia, Spain"
-    orcid: 0009-0002-1093-693X
+    orcid: https://orcid.org/0009-0002-1093-693X
   - family-names: Conesa
     given-names: Ana
     affiliation: "Institute for Integrative Systems Biology (I2SysBio), CSIC-UV, Valencia, Spain"
-    # orcid: https://orcid.org/0000-0000-0000-0000
+    orcid: https://orcid.org/0000-0001-9597-311X
 repository-code: "https://github.com/ConesaLab/SQANTI_evidence"
 url: "https://github.com/ConesaLab/SQANTI_evidence"
 license: GPL-3.0

@@ -2,6 +2,14 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-09] - Restore the Transcript-Model Gene Grouping After SQANTI3
+- **Branch**: `dev-IsoQuant`
+- **Goal**: SQANTI3 6.0.1 gives every intergenic/genic_intron isoform its own `novelGene_<n>` (`src/helpers.py::rename_novel_genes`, by design). Against the placebo reference every isoform is intergenic, so the filtered GTF and classification carried one gene per transcript (1.00 transcripts/gene in human, zebrafish and fly; IsoQuant itself: 2.06 / 1.35 / 1.37). Gene counts in the final annotation and GAQET2 equalled Tier 1 transcript counts, and `select_dominant_isoforms.py` (groups by `associated_gene`) treated every coding isoform as dominant.
+- **Summary**:
+    - New `scripts/restore_gene_ids.py` and rule `restore_gene_ids` (after `filter_isoforms`): maps each surviving `transcript_id` to its IsoQuant `gene_id` and rewrites `gene_id` in the GTF and `associated_gene` in the RulesFilter classification (`*.filtered.regrouped.gtf`, `*_RulesFilter_classification.regrouped.txt`); transcripts absent from the models keep their SQANTI id and are logged.
+    - `select_dominant_sqanti_genes`, `extract_rna_hints` and `resolve_transcript_tiers` read the regrouped files.
+    - Tests `tests/test_restore_gene_ids.py` (5); README output tree updated. GffCompare metrics unaffected (coordinate based); gene counts and the dominant-isoform set change. Measured on finished runs: human 1.88, zebrafish 1.33, Drosophila 1.29, Arabidopsis 1.08 transcripts/gene.
+
 ## [2026-09-08] - Script Robustness (roadmap 1.7)
 - **Branch**: `dev-IsoQuant`
 - **Goal**: Remove silent failure modes in the custom scripts without changing their outputs.
@@ -364,8 +372,3 @@ This file tracks the history of commits made by the AI agent, providing a high-l
 - **Branch**: `dev-gaqet2`
 - **Commit**: `6b756d9`
 - **Summary**: Updated the pipeline to maintain compatibility with the new SQANTI release.
-
-## 2026-09-09 — dev-IsoQuant — restore the transcript-model gene grouping after SQANTI3
-
-Goal: SQANTI3 6.0.1 gives every intergenic/genic_intron isoform its own `novelGene_<n>` (`src/helpers.py::rename_novel_genes`, by design); against the placebo reference every isoform is intergenic, so the filtered GTF and classification carried one gene per transcript (1.00 transcripts/gene in human, zebrafish, fly; IsoQuant: 2.06 / 1.35 / 1.37). Gene counts in the final annotation and GAQET2 equalled Tier 1 transcript counts, and `select_dominant_isoforms.py` (groups by `associated_gene`) treated every coding isoform as dominant.
-Summary: new `scripts/restore_gene_ids.py` + rule `restore_gene_ids` (after `filter_isoforms`): maps each surviving transcript_id to its IsoQuant gene_id and rewrites `gene_id` in the GTF and `associated_gene` in the RulesFilter classification (`*.filtered.regrouped.gtf`, `*_RulesFilter_classification.regrouped.txt`); transcripts absent from the models keep their SQANTI id and are logged. `select_dominant_sqanti_genes`, `extract_rna_hints` and `resolve_transcript_tiers` now read the regrouped files. Tests `tests/test_restore_gene_ids.py`; README tree and handoff diagram updated. GffCompare metrics are unaffected (coordinate based); gene counts and the dominant-isoform set change.

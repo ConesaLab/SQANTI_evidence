@@ -2,6 +2,9 @@
 
 **Long-Read Evidence-Driven Structural Annotation Pipeline**
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+<!-- Zenodo DOI badge: replace after the first release, e.g. [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX) -->
+
 SQANTI-evidence is a Snakemake workflow that produces a structural genome annotation from a genome assembly and long-read RNA-seq data (PacBio Iso-Seq / HiFi or Oxford Nanopore). It follows the findings of [Paniagua et al. 2025](https://genome.cshlp.org/content/early/2025/03/04/gr.279864.124), where the best-performing strategy was an evidence-driven gene prediction guided by a long-read transcriptome curated at the transcript level.
 
 The pipeline combines two tracks:
@@ -212,9 +215,9 @@ No example dataset ships with the repository yet.
 
 ## License & citations
 
-License: to be defined.
+SQANTI-evidence is released under the [GNU General Public License v3.0](LICENSE), the license of SQANTI3.
 
-If you use SQANTI-evidence, please cite this repository and the tools it relies on:
+To cite SQANTI-evidence use the metadata in [`CITATION.cff`](CITATION.cff) (GitHub's "Cite this repository" button) or the Zenodo DOI of the release you used (badge above, added after the first release). Please also cite the tools it relies on:
 
 * IsoQuant: Prjibelski, A. D., et al. (2023). *Nature Biotechnology*, 41(7), 939–948.
 * SQANTI3: Pardo-Palacios, F. J., et al. (2024). *Nature Methods*, 21(5), 789–798.

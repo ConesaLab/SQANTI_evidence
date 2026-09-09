@@ -2,6 +2,14 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-09] - License, Citation File and Zenodo Metadata
+- **Branch**: `dev-IsoQuant`
+- **Goal**: Make the repository archivable on Zenodo for the v1.0 release (Zenodo checklist items 2 and 5).
+- **Summary**:
+    - `LICENSE`: GNU GPL v3.0 (the license of SQANTI3, same lab); README badge and "License & citations" section updated, Zenodo DOI badge placeholder added.
+    - `CITATION.cff` (CFF 1.2, GitHub "Cite this repository"): title, authors (ORCID placeholders to fill), repository URL, license, version 1.0.0, date, keywords, Paniagua et al. 2025 reference.
+    - `.zenodo.json`: upload type software, license, creators, keywords, description, so the Zenodo record is pre-filled at the first GitHub release.
+
 ## [2026-09-09] - Restore the Transcript-Model Gene Grouping After SQANTI3
 - **Branch**: `dev-IsoQuant`
 - **Goal**: SQANTI3 6.0.1 gives every intergenic/genic_intron isoform its own `novelGene_<n>` (`src/helpers.py::rename_novel_genes`, by design). Against the placebo reference every isoform is intergenic, so the filtered GTF and classification carried one gene per transcript (1.00 transcripts/gene in human, zebrafish and fly; IsoQuant itself: 2.06 / 1.35 / 1.37). Gene counts in the final annotation and GAQET2 equalled Tier 1 transcript counts, and `select_dominant_isoforms.py` (groups by `associated_gene`) treated every coding isoform as dominant.

@@ -4,14 +4,14 @@
 cff-version: 1.2.0
 message: "If you use SQANTI-evidence, please cite it using this metadata."
 type: software
-title: "SQANTI-evidence: structural genome annotation from long-read RNA-seq"
+title: "SQANTI-evidence: evidence-driven structural genome annotation using curated long-read RNA-seq"
 abstract: "Snakemake workflow that builds a structural genome annotation from a genome assembly and long-read RNA-seq (PacBio Iso-Seq/HiFi or Oxford Nanopore). Transcript models from IsoQuant are curated with SQANTI3 and written to the annotation unchanged (Tier 1); Augustus, trained on the species' own dominant ORFs and BUSCO orthologs and guided by hints from the curated transcripts and Miniprot self-protein alignments, fills the unexpressed loci (Tier 2)."
 authors:
   - family-names: Atienza
     given-names: Pablo
     email: pablo.atienza@csic.es
     affiliation: "Institute for Integrative Systems Biology (I2SysBio), CSIC-UV, Valencia, Spain"
-    # orcid: https://orcid.org/0000-0000-0000-0000
+    orcid: 0009-0002-1093-693X
   - family-names: Conesa
     given-names: Ana
     affiliation: "Institute for Integrative Systems Biology (I2SysBio), CSIC-UV, Valencia, Spain"

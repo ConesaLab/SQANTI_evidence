@@ -1,46 +1,67 @@
-required:
-  genome: ""
-  input: ""
-  outdir: "results"
-  toolsdir: "/home/pabloati/Programs/lr_annotation"
-  samples_setup: "data/experiment_setup.tsv"
-isoseq:
-  primers: "data/original_primers.fasta"
-  primers_to_samples: "primers_sample.csv"
-augustus:
-  prediction: evidence_driven
-  reference_gtf: "data/mm39.ncbiRefSeq.gtf"
-  species_name: "trial"
-  utr: True
-  mode: split
-qc:
-  omark_db: Metazoa
-ab_initio:
+project:
+  genome: ""                      # Reference genome FASTA to annotate (required; softmasked recommended)
+  input: ""                       # Long reads: FASTQ/FASTA or unaligned BAM (required)
+  outdir: "SQANTI_evidence_results"
+  toolsdir: "/path/to/tools_dir"  # Conda envs, BUSCO/OMArk databases and split genomes are stored here
+  prediction_genome: ""           # Genome used for Augustus prediction; defaults to project.genome if empty
+  log_level: "INFO"
+
+training:
+  mode: "mixed"                   # Options: mixed, busco_only, sqanti_only
+  lineage: "eutheria_odb10"       # BUSCO lineage (required for mixed / busco_only)
+  miniprot_threshold: 0.95        # Minimum identity to keep a BUSCO/Miniprot gene model
+  flanking_region: 1000           # Flanking bp added around training genes (gff2gbSmallDNA.pl)
+  test_size: 5000                 # Maximum number of genes in the Augustus training set
   busco_downloads: "busco_downloads"
-  lineage: "eutheria_odb10"
-  miniprot_threshold: 0.95 # Minimum identity threshold for miniprot gene models
-  flanking_region: 1000
-  test_size: 5000
+
+prediction:
+  species: "trial"                # Augustus species name to create/train
+  mode: "split"                   # Options: split (one Augustus job per chromosome), full
+  utr: True
+  filter_mode: "medium"           # Tier 2 single-exon filter: strict (needs hint support),
+                                  #   medium (>= 300 bp or hint support), none
+  hint_config: "envs/hint_config.tsv"
+  hint_weights: "envs/extrinsic.hints_weights_default.cfg"
+  miniprot_args: "-N 30 -p 0.6 --outs=0.5"   # Miniprot options for self-protein hints (src=P).
+                                  #   --outs=0.5 lets secondary (paralog) alignments through; Miniprot's
+                                  #   default 0.99 suppresses them entirely.
+
+curation:
+  mode: "placebo"                 # Reference given to SQANTI3: ab_initio, placebo, user
+  user_gtf: ""                    # Path to custom GTF if mode is 'user'
+  data_type: "pacbio"             # IsoQuant --data_type: pacbio (CCS/HiFi), nanopore, assembly
+  isoquant_args: ""               # Extra IsoQuant options, passed verbatim. Iso-Seq FLNC reads have their
+                                  #   poly(A) tails removed by `isoseq refine`, and IsoQuant needs a tail to
+                                  #   build novel single-exon transcripts and to strand unspliced reads; for
+                                  #   such oriented reads use "--polya_trimmed all --stranded forward".
+                                  #   (--polya_trimmed all assumes reads oriented 5'->3'; not for raw ONT cDNA.)
+  filter_rules: "envs/filter_rules.json"
+
+evaluation:
+  reference_gtf: ""               # Optional; enables GffCompare benchmarking when set
+  omark_db: "LUCA"
+  omark_taxid: 10090
+
+# Slurm-style human-readable values (mem in GB, time in h). Any missing key falls back
+# to the defaults in rules/setup/functions.smk.
 resources:
-  big:
-    cpus: 10
-    mem: 20G
-    time: 24h
-    qos: long
-  busco:
-    cpus: 30
-    mem: 60G
-    time: 120h
-    qos: long
   small:
     cpus: 2
-    mem: 8G
-    time: 2h
-    qos: short
-  small_bigMem:
-    mem: 20G
+    mem: "8GB"
+    time: "2h"
+    qos: "short"
   medium:
     cpus: 8
-    mem: 12G
-    time: 10h
-    qos: short
+    mem: "12GB"
+    time: "10h"
+    qos: "short"
+  big:
+    cpus: 10
+    mem: "20GB"
+    time: "24h"
+    qos: "long"
+  busco:
+    cpus: 30
+    mem: "60GB"
+    time: "72h"
+    qos: "long"

@@ -1,15 +1,16 @@
-chromosomes=get_chromosomes(config.required.genome)
+chromosomes=get_chromosomes(config.project.prediction_genome)
+sp_name = config.prediction.species
 
 rule split_fasta:
     input:
-        fasta = config.required.genome
+        fasta = config.project.prediction_genome
     output:
         touch(os.path.join(dir.tools_reference,genome_name,f"{genome_name}_split.done"))
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     conda:
         f"{dir.envs}/sqanti3.yaml"
     threads:
@@ -19,23 +20,26 @@ rule split_fasta:
     script:
         os.path.join(dir.scripts,"splitfasta.py")
 
-rule ed_augusuts_per_chromosome:
+rule ed_augustus_per_chromosome:
     input:
         os.path.join(dir.tools_reference,genome_name,f"{genome_name}_split.done"),
         mod = os.path.join(dir.out.ab_augustus_training,"SC_freq_mod.done"),
-        gff = os.path.join(dir.out.ed_hints,"IsoSeq.hints.gff")
+        gff = os.path.join(dir.out.ed_hints,f"{sp_name}.hints.gff")
     output:
         os.path.join(dir.out.ed_augustus,"split","{chromosome}.prediction.gff")
     conda:
         f"{dir.envs}/augustus.yaml"
     params:
-        name = config.augustus.species_name,
-        extcfg = f"{dir.envs}/extrinsic.M.RM.PB.cfg"
+        name = config.prediction.species,
+        extcfg = config.prediction.hint_weights if config.prediction.hint_weights and os.path.isfile(config.prediction.hint_weights) else f"{dir.envs}/extrinsic.M.RM.PB.cfg"
+    # Long walltime for the largest chromosomes but small CPU/memory footprint (Augustus is
+    # single-threaded, ~2.5 GB on human chr1). QoS and runtime must come from the SAME tier:
+    # a 'short' QoS with the 'big' runtime was rejected by Slurm (QOSMaxWallDurationPerJobLimit).
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.big.qos}\'",
         cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.big.mem,
-        runtime =  config.resources.big.time
+        mem = config.resources.small.mem,
+        runtime = config.resources.big.time
     log:
         os.path.join(dir.logs,"ed_augustus_{chromosome}.log")
     threads:
@@ -44,7 +48,9 @@ rule ed_augusuts_per_chromosome:
         """
         chromosome={dir.tools_reference}/{genome_name}/{wildcards.chromosome}.fasta
         augustus --species={params.name} $chromosome --hintsfile={input.gff} \
-        --extrinsicCfgFile={params.extcfg} --protein=on --codingseq=on > {output}  2>{log}
+        --extrinsicCfgFile={params.extcfg} --protein=on --codingseq=on \
+        --alternatives-from-evidence=true \
+         > {output}  2>{log}
         """
 
 rule merge_ed_predictions:
@@ -53,10 +59,10 @@ rule merge_ed_predictions:
     output:
         temp(os.path.join(dir.out.ed_augustus,"Naive_prediction.gff"))
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     threads:
         config.resources.small.cpus
     shell:
@@ -74,10 +80,10 @@ rule rename_ed_augustus:
     output:
         os.path.join(dir.out.ed_augustus,"Augustus_prediction.gff")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     log:
         os.path.join(dir.logs, "rename_augustus.log")
     script:
@@ -93,12 +99,12 @@ rule ab_augustus_per_chromosome:
     conda:
         f"{dir.envs}/augustus.yaml"
     params:
-        name = config.augustus.species_name,
+        name = config.prediction.species,
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.big.qos}\'",   # same tier as runtime (see above)
         cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.big.mem,
-        runtime =  config.resources.big.time
+        mem = config.resources.small.mem,
+        runtime = config.resources.big.time
     log:
         os.path.join(dir.logs,"ab_augustus_{chromosome}.log")
     threads:
@@ -115,10 +121,10 @@ rule merge_ab_predictions:
     output:
         os.path.join(dir.out.ab_augustus,"split","ab_initio_prediction.gff")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     threads:
         config.resources.small.cpus
     shell:
@@ -133,10 +139,10 @@ rule rename_ab_augustus:
     output:
         os.path.join(dir.out.ab_augustus,"ab_initio_prediction.gff")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
+        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
         cpus_per_task = config.resources.small.cpus,
         mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        runtime = config.resources.small.time
     log:
         os.path.join(dir.logs, "rename_augustus_ab.log")
     script:

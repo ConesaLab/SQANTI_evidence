@@ -1,8 +1,0 @@
-name: minimap2
-channels:
-  - conda-forge
-  - bioconda
-dependencies:
-  - minimap2
-  - samtools
-prefix: /home/pabloati/miniforge3/envs/minimap2

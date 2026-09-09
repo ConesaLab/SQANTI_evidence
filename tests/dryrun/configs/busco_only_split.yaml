@@ -1,0 +1,17 @@
+# Dry-run fixture: training.mode=busco_only, prediction.mode=split. Paths are relative to the repo root.
+project:
+  genome: "tests/dryrun/data/genome.fa"
+  input: "tests/dryrun/data/reads.fastq"
+  outdir: "tests/dryrun/results/busco_only_split"
+  toolsdir: "tests/dryrun/tools"
+training:
+  mode: "busco_only"
+  lineage: "dummy_odb12"
+prediction:
+  species: "dryrun_species"
+  mode: "split"
+  utr: False
+curation:
+  mode: "placebo"
+evaluation:
+  reference_gtf: "tests/dryrun/data/reference.gtf"

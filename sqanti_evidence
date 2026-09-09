@@ -3,6 +3,11 @@ import subprocess
 import os,sys,yaml
 import argparse
 
+# Make the wrapper importable from any working directory (config paths are still
+# resolved by Snakemake relative to the current working directory).
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from scripts.input_check import check_inputs
+
 def load_configfile(file):
     if not os.path.exists(file):
         sys.exit("Unable to locate the config file; tried %s" % file)
@@ -17,8 +22,9 @@ def get_snakefile(file="snakefile"):
 
 def run_smk(conf,jobs,dryrun,unlock,rerun_incomplete,slurm,extras,slurm_extras):
     config = load_configfile(conf)
+    check_inputs(config)
     sf = get_snakefile()
-    conda_prefix = os.path.join(config["required"].get('toolsdir', None),"conda_envs")
+    conda_prefix = os.path.join(config["project"].get('toolsdir', None),"conda_envs")
     cmd = f'snakemake all -s {sf} --configfile {conf} --use-conda --conda-prefix {conda_prefix} -j {jobs}'
     if dryrun:
         cmd += ' -n'
@@ -28,13 +34,16 @@ def run_smk(conf,jobs,dryrun,unlock,rerun_incomplete,slurm,extras,slurm_extras):
         cmd += ' --ri'
     if slurm:
         cmd += ' --executor slurm'
+        # Add meaningful job names for Slurm queue
+        if slurm_extras is None or '--jobname' not in slurm_extras:
+            cmd += ' --jobname "{rulename}.{jobid}"'
         if slurm_extras != None:
             cmd += f' {slurm_extras}'
     if extras:
         cmd += f' {extras}'
     print(f"Running command: {cmd}")
-    subprocess.run(cmd, shell=True)
-    return
+    result = subprocess.run(cmd, shell=True)
+    return result.returncode
 
 def argparser():
     parser = argparse.ArgumentParser(description='Run snakemake')
@@ -51,4 +60,6 @@ def argparser():
 if __name__ == '__main__':
     parser = argparser()
     args = parser.parse_args()
-    run_smk(args.config, args.jobs, args.dryrun, args.unlock, args.rerun_incomplete, args.slurm,args.extras,args.slurm_extras)
+    rc = run_smk(args.config, args.jobs, args.dryrun, args.unlock, args.rerun_incomplete, args.slurm, args.extras, args.slurm_extras)
+    sys.exit(rc)
+

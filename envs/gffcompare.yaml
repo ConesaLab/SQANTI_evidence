@@ -1,0 +1,6 @@
+name: gffcompare
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - gffcompare

@@ -1,0 +1,12 @@
+{
+  "title": "SQANTI-evidence: structural genome annotation from long-read RNA-seq",
+  "upload_type": "software",
+  "license": "GPL-3.0",
+  "creators": [
+    {"name": "Atienza, Pablo", "affiliation": "Institute for Integrative Systems Biology (I2SysBio), CSIC-UV, Valencia, Spain"},
+    {"name": "Conesa, Ana", "affiliation": "Institute for Integrative Systems Biology (I2SysBio), CSIC-UV, Valencia, Spain"}
+  ],
+  "keywords": ["genome annotation", "long-read sequencing", "transcriptomics", "isoform detection", "PacBio Iso-Seq", "Oxford Nanopore", "Augustus", "SQANTI3", "Snakemake"],
+  "description": "Snakemake workflow that builds a structural genome annotation from a genome assembly and long-read RNA-seq (PacBio Iso-Seq/HiFi or Oxford Nanopore). IsoQuant transcript models curated with SQANTI3 form Tier 1 of the annotation; Augustus trained on the species' own dominant ORFs and BUSCO orthologs, guided by hints from the curated transcripts and Miniprot self-protein alignments, fills the unexpressed loci (Tier 2).",
+  "access_right": "open"
+}

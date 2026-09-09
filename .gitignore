@@ -1,3 +1,20 @@
 .vscode
 .snakemake
 test/
+hints_trial
+genomes_benchmark/
+
+**/__pycache__/
+*.pyc
+.pytest_cache/
+
+# Gemini-specific files
+GEMINI.md
+CLAUDE.md
+LEARNINGS.gemini.md
+docs/
+GIT_HISTORY.txt
+
+# dry-run fixture outputs
+tests/dryrun/results/
+tests/dryrun/tools/

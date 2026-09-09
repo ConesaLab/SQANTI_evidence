@@ -1,19 +1,6 @@
 name: gaqet2
 channels:
-  - conda-forge
-  - defaults
+  - victorgcb
   - bioconda
 dependencies:
-  - agat
-  - psauron
-  - gffread
-  - tesorter
-  - diamond
-  - omark
-  - seqtk
-  - busco
-  - python=3.10
-  - pip:
-    - psauron
-    - ete3
-    - PyYAML
+  - gaqet

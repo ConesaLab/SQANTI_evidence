@@ -1,29 +1,90 @@
+
 import glob
 import attrmap as ap
 
+include: os.path.join("rules","setup","functions.smk")
+
+# Validate and automatically fill config parameters
+config = validate_and_fill_config(config)
 config = ap.AttrMap(config)
 
-localrules: all, install_tama, install_sqanti
+localrules: all
+
 # Setup rules
 include: os.path.join("rules","setup","directories.smk")
 include: os.path.join("rules","setup","installations.smk")
-include: os.path.join("rules","setup","functions.smk")
+include: os.path.join("rules","setup","logging_setup.smk")
 
-sample,filetype = get_sample_name(config.required.input)
-genome_name = get_genome_name(config.required.genome)
+sample,filetype = get_sample_name(str(config.project.input))
+sample_qc = sample.replace('.', '-')
+genome_name = get_genome_name(str(config.project.genome))
+
+# Snakemake hooks for logging
+onstart:
+    global pipeline_logger
+    log_level = config.project.log_level 
+    if log_level is None:
+        log_level = "INFO"
+    pipeline_logger = setup_pipeline_logger(log_level=log_level, log_dir=dir.logs)
+    
+    # Compress old logs
+    compress_old_logs(log_dir=dir.logs)
+    
+    # Log pipeline start
+    pipeline_logger.info("=" * 70)
+    pipeline_logger.info("GENOME ANNOTATION PIPELINE STARTED")
+    pipeline_logger.info("=" * 70)
+    
+    # Log sample and genome information
+    pipeline_logger.info(f"Sample name: {sample}")
+    pipeline_logger.info(f"Input file type: {filetype}")
+    pipeline_logger.info(f"Genome name: {genome_name}")
+    
+    # Log configuration summary
+    log_config_summary(pipeline_logger, config)
+    
+    pipeline_logger.info("")
+    pipeline_logger.info("Starting workflow execution...")
+
+
+onsuccess:
+    if pipeline_logger:
+        pipeline_logger.info("")
+        pipeline_logger.info("=" * 70)
+        pipeline_logger.info("PIPELINE COMPLETED SUCCESSFULLY")
+        pipeline_logger.info("=" * 70)
+        pipeline_logger.info(f"Final annotation file: {os.path.join(dir.out.evidence_driven, 'Final_clean_prediction.gff')}")
+        pipeline_logger.info(f"GAQET plot: {os.path.join(dir.out.qc_gaqet2, f'{sample}_GAQET.plot.png')}")
+        pipeline_logger.info("All output files have been generated.")
+
+
+onerror:
+    if pipeline_logger:
+        pipeline_logger.error("")
+        pipeline_logger.error("=" * 70)
+        pipeline_logger.error("PIPELINE FAILED")
+        pipeline_logger.error("=" * 70)
+        pipeline_logger.error("An error occurred during pipeline execution.")
+        pipeline_logger.error("Check the individual rule logs in the logs/rules/ directory for details.")
 
 
 include: os.path.join("rules","transcript_modelling.smk")
 
+include: os.path.join("rules","augustus_training.smk")
+    
 include: os.path.join("rules","ab_initio.smk")
 
 include: os.path.join("rules","evidence_driven.smk")
+
+# Chromosome-parallel Augustus rules (both ab initio and hint-guided) live in one file
+if config.prediction.mode == "split":
+    include: os.path.join("rules","split_augustus.smk")
 
 include: os.path.join("rules","quality_control.smk")
 
 rule all:
     input:
         os.path.join(dir.out.evidence_driven,"Final_clean_prediction.gff"),
-        os.path.join(dir.out.qc_omark,"Final.pdf"),
-        os.path.join(dir.out.qc_busco),
-        os.path.join(dir.out.qc_agat,"Final_stats.txt"),
+        os.path.join(dir.out.qc_gaqet2,f"{sample}_GAQET.plot.png"),
+        os.path.join(dir.out.qc_gffcompare, f"{sample_qc}.stats") if config.evaluation.reference_gtf and os.path.isfile(config.evaluation.reference_gtf) else [],
+        os.path.join(dir.out.qc_gffcompare, f"{sample_qc}_cds.stats") if config.evaluation.reference_gtf and os.path.isfile(config.evaluation.reference_gtf) else []

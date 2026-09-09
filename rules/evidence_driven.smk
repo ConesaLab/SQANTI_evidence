@@ -1,118 +1,141 @@
-rule run_sqanti:
+sp_name = config.prediction.species
+
+
+
+rule extract_rna_hints:
     input:
-        isoforms = os.path.join(dir.out.isoseq_collapsed,f"{sample}.collapsed.gff"),
-        ref_gff = get_sqanti_gtf(config),
-        ref_genome = config.required.genome,
-        sqanti = os.path.join(dir.tools_sqanti,"sqanti_installed.done")
+        gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.regrouped.gtf"),
+        classification=os.path.join(dir.out.ed_sqanti, f"{sp_name}_classification.txt"),
+        hint_config=config.prediction.hint_config,
     output:
-        classification = os.path.join(dir.out.ed_sqanti,"IsoSeq_classification.txt"),
-        gtf = os.path.join(dir.out.ed_sqanti,"IsoSeq_corrected.cds.gtf")
-    threads:
-        config.resources.medium.cpus,
+        os.path.join(dir.out.ed_hints, f"{sp_name}.rna.hints.gff"),
     conda:
-        f"{dir.envs}/sqanti3.yaml"
+        os.path.join(dir.envs, "busco.yaml")
+    resources:
+        slurm_extra=f"'--qos={config.resources.small.qos}'",
+        cpus_per_task=config.resources.small.cpus,
+        mem=config.resources.small.mem,
+        runtime=config.resources.small.time,
+    script:
+        os.path.join(dir.scripts, "generate_hints.py")
+
+
+rule align_proteins_miniprot:
+    input:
+        genome=config.project.genome,
+        proteins=os.path.join(dir.out.ab_augustus_model, "sqanti_dominant.faa"),
+    output:
+        miniprot_gff=os.path.join(dir.out.ed_hints, "sqanti_proteins.miniprot.gff"),
     log:
-        os.path.join(dir.logs,"run_sqanti.log")
+        os.path.join(dir.logs, "align_proteins_miniprot.log"),
+    conda:
+        os.path.join(dir.envs, "busco.yaml")
+    # medium tier: Miniprot indexes the whole genome in memory (>8 GB for a 3 Gb genome) and
+    # scales well with threads; the small tier (2 CPUs / 8 GB) only sufficed for compact genomes.
+    threads: config.resources.medium.cpus
     resources:
-        slurm_extra = f"'--qos={config.resources.medium.qos}'",
-        cpus_per_task = config.resources.busco.cpus,
-        mem = config.resources.big.mem,
-        runtime =  config.resources.medium.time
+        slurm_extra=f"'--qos={config.resources.medium.qos}'",
+        cpus_per_task=config.resources.medium.cpus,
+        mem=config.resources.medium.mem,
+        runtime=config.resources.medium.time,
+    params:
+        miniprot_args=config.prediction.miniprot_args,
     shell:
         """
-        export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
-        python {dir.tools_sqanti}/sqanti3_qc.py --isoforms {input.isoforms} --refGTF {input.ref_gff} --refFasta {input.ref_genome} \
-            --dir {dir.out.ed_sqanti} --output IsoSeq -t {threads} &> {log}
-        mv {dir.out.ed_sqanti}/IsoSeq_corrected.cds.gff3 {output.gtf}
+        miniprot --gff -t {threads} {params.miniprot_args} {input.genome} {input.proteins} > {output.miniprot_gff} 2> {log}
         """
 
-rule filter_isoforms:
+
+rule convert_miniprot_hints:
     input:
-        classification = os.path.join(dir.out.ed_sqanti,"IsoSeq_classification.txt"),
-        gtf = os.path.join(dir.out.ed_sqanti,"IsoSeq_corrected.cds.gtf")
+        miniprot_gff=os.path.join(dir.out.ed_hints, "sqanti_proteins.miniprot.gff"),
     output:
-        gtf = os.path.join(dir.out.ed_sqanti,"IsoSeq.filtered.gtf")
-    conda:
-        os.path.join(dir.envs,"sqanti3.yaml")
+        protein_hints=os.path.join(dir.out.ed_hints, f"{sp_name}.protein.hints.gff"),
     log:
-        os.path.join(dir.logs,"filter_sqanti.log")
-    threads:
-        config.resources.small.cpus,
-    params:
-        json_rules = config.sqanti.json_rules 
-    resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
-    shell:
-        """
-        export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
-        python {dir.tools_sqanti}/sqanti3_filter.py rules --sqanti_class {input.classification} --filter_gtf {input.gtf} \
-            -j {params.json_rules} --dir {dir.out.ed_sqanti} \
-            --output IsoSeq &> {log}
-        """
-
-rule extract_hints:
-    input:
-        os.path.join(dir.out.ed_sqanti,"IsoSeq.filtered.gtf")
-    output:
-        os.path.join(dir.out.ed_hints,"IsoSeq.hints.gff")
+        os.path.join(dir.logs, "convert_miniprot_hints.log"),
     conda:
-        os.path.join(dir.envs,"busco.yaml")
-    params:
-        utr = config.augustus.utr
-        #TODO: Perhaps add techonolgy and priority options
+        os.path.join(dir.envs, "basic.yaml")
     resources:
-        slurm_extra = f"'--qos={config.resources.small.qos}'",
-        cpus_per_task = config.resources.small.cpus,
-        mem = config.resources.small.mem,
-        runtime =  config.resources.small.time
+        slurm_extra=f"'--qos={config.resources.small.qos}'",
+        cpus_per_task=config.resources.small.cpus,
+        mem=config.resources.small.mem,
+        runtime=config.resources.small.time,
+    params:
+        src="P",
+        priority=2,
+    script:
+        os.path.join(dir.scripts, "miniprot_to_hints.py")
+
+
+rule combine_evidence_hints:
+    input:
+        rna_hints=os.path.join(dir.out.ed_hints, f"{sp_name}.rna.hints.gff"),
+        protein_hints=os.path.join(dir.out.ed_hints, f"{sp_name}.protein.hints.gff"),
+    output:
+        combined_hints=os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff"),
+    log:
+        os.path.join(dir.logs, "combine_evidence_hints.log"),
+    resources:
+        slurm_extra=f"'--qos={config.resources.small.qos}'",
+        cpus_per_task=config.resources.small.cpus,
+        mem=config.resources.small.mem,
+        runtime=config.resources.small.time,
     shell:
         """
-        tmp_dir=$(dirname {output})/tmp
-        mkdir -p $tmp_dir
-        if [ {params.utr} == "True" ]; then
-            grep -P "\t(CDS|exon)\t" {input} | gtf2gff.pl --printIntron --out=$tmp_dir/tmp.gff
-            grep -P "\t(CDS|intron|exon)\t" $tmp_dir/tmp.gff > $tmp_dir/tmp2.gff
-
-        else
-            grep -P "\t(CDS)\t" {input} | gtf2gff.pl --printIntron --out=$tmp_dir/tmp.gff
-            grep -P "\t(CDS|intron)\t" $tmp_dir/tmp.gff > $tmp_dir/tmp2.gff
-        fi
-        # Remove gene_id and change transcript id for grp_id
-        sed -i 's/gene_id[^;]*;//g' $tmp_dir/tmp2.gff
-        sed -i 's/transcript_id \\"/grp=/g' $tmp_dir/tmp2.gff
-        # Add the source
-        cat $tmp_dir/tmp2.gff | sed "s/\\";/;pri=1;src=PB/g" > {output}
-        rm -r $tmp_dir
+        cat {input.rna_hints} {input.protein_hints} | sort -k1,1 -k4,4n > {output.combined_hints} 2> {log}
         """
 
-if config.augustus.mode == "split":
-    include: "split_augustus.smk"
 
-else:
+# In split mode the per-chromosome rules in rules/split_augustus.smk (included from the
+# snakefile) produce Augustus_prediction.gff instead.
+if config.prediction.mode != "split":
+
     rule augustus_hints:
         input:
-            genome = config.required.genome,
-            mod = os.path.join(dir.out.ab_augustus_training,"SC_freq_mod.done"),
-            gff = os.path.join(dir.out.ed_hints,"IsoSeq.hints.gff")
+            genome=config.project.prediction_genome,
+            mod=os.path.join(dir.out.ab_augustus_training, "SC_freq_mod.done"),
+            gff=os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff"),
         output:
-            os.path.join(dir.out.ed_augustus,"Augustus_prediction.gff")
-        conda:
-            os.path.join(dir.envs,"augustus.yaml")
-        params:
-            name = config.augustus.species_name,
-            extcfg = config.augustus.config if config.evidence_driven.config else f"{dir.envs}/extrinsic.M.RM.PB.cfg"
+            os.path.join(dir.out.ed_augustus, "Augustus_prediction.gff"),
         log:
-            os.path.join(dir.logs,"run_augustus_ed.log")
+            os.path.join(dir.logs, "run_augustus_ed.log"),
+        conda:
+            os.path.join(dir.envs, "augustus.yaml")
         resources:
-            slurm_extra = f"'--qos={config.resources.big.qos}'",
-            cpus_per_task = config.resources.big.cpus,
-            mem = config.resources.big.mem,
-            runtime =  config.resources.big.time
+            slurm_extra=f"'--qos={config.resources.big.qos}'",
+            cpus_per_task=config.resources.big.cpus,
+            mem=config.resources.big.mem,
+            runtime=config.resources.big.time,
+        params:
+            name=config.prediction.species,
+            extcfg=config.prediction.hint_weights,
         shell:
             """
             augustus --species={params.name} {input.genome} --hintsfile={input.gff} \
-            --extrinsicCfgFile={params.extcfg} --protein=on --codingseq=on > {output} 2> {log}
+            --extrinsicCfgFile={params.extcfg} --protein=on --codingseq=on \
+            --alternatives-from-evidence=true > {output} 2> {log}
             """
+
+
+rule resolve_transcript_tiers:
+    input:
+        sqanti_gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.regrouped.gtf"),
+        augustus_gff=os.path.join(dir.out.ed_augustus, "Augustus_prediction.gff"),
+        hints=os.path.join(dir.out.ed_hints, f"{sp_name}.hints.gff"),
+    output:
+        resolved_gtf=os.path.join(dir.out.ed_augustus, "resolved_prediction.gtf"),
+    log:
+        os.path.join(dir.logs, "resolve_transcript_tiers.log"),
+    conda:
+        os.path.join(dir.envs, "basic.yaml")
+    resources:
+        slurm_extra=f"'--qos={config.resources.small.qos}'",
+        cpus_per_task=config.resources.small.cpus,
+        mem=config.resources.small.mem,
+        runtime=config.resources.small.time,
+    params:
+        min_monoexon_len=300,
+        filter_mode=config.prediction.filter_mode,
+    script:
+        os.path.join(dir.scripts, "resolve_transcript_tiers.py")
+

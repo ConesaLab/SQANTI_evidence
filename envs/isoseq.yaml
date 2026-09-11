@@ -1,0 +1,10 @@
+name: isoseq
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  # Versions taken from the environment validated on the Garnatxa HPC (2026-09-11).
+  - isoseq=4.3.0        # cluster2, collapse
+  - pbmm2=26.1.99       # index, align (minimap2 with PacBio presets)
+  - pysam=0.24.0        # fastq2bam.py
+  - biopython=1.87      # fastq2bam.py

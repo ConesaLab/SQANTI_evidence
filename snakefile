@@ -68,6 +68,11 @@ onerror:
         pipeline_logger.error("Check the individual rule logs in the logs/rules/ directory for details.")
 
 
+# Transcriptome reconstruction: IsoQuant lives in transcript_modelling.smk, the IsoSeq3 route
+# (cluster -> align -> collapse) in its own file. Both produce the same two files; see get_transcriptome().
+if config.curation.reconstruction == "isoseq":
+    include: os.path.join("rules","isoseq_reconstruction.smk")
+
 include: os.path.join("rules","transcript_modelling.smk")
 
 include: os.path.join("rules","augustus_training.smk")

@@ -30,6 +30,7 @@ ALLOWED_VALUES = {
     ("prediction", "filter_mode"): ["strict", "medium", "none"],
     ("curation", "mode"): ["placebo", "user", "ab_initio"],
     ("curation", "data_type"): ["pacbio", "pacbio_ccs", "nanopore", "ont", "assembly", "transcripts"],
+    ("curation", "reconstruction"): ["isoquant", "isoseq"],
 }
 
 # Optional file paths: validated only when the user set a non-empty value.
@@ -58,6 +59,38 @@ def validate_isoquant_args(extra):
         return (f"ERROR: 'curation.isoquant_args' must not contain {clashes}: the pipeline already sets "
                 "the reference, input, data type, prefix, threads and output directory for IsoQuant.")
     return None
+
+
+# Options rule isoseq_collapse sets itself; passing them again through curation.isoseq_args is rejected.
+# --do-not-collapse-extra-5exons is reserved on purpose: keeping 5'-degraded variants as separate models is
+# what makes this route permissive, which is the property under comparison.
+ISOSEQ_RESERVED_OPTIONS = ["-j", "--num-threads", "--log-file", "--log-level",
+                           "--do-not-collapse-extra-5exons"]
+
+
+def validate_isoseq_args(extra):
+    """Returns an error message if curation.isoseq_args repeats an option the rule already sets, else None."""
+    if not extra:
+        return None
+    if not isinstance(extra, str):
+        return f"ERROR: 'curation.isoseq_args' must be a string (current: {extra!r})"
+    tokens = [t.split("=")[0] for t in extra.split()]
+    clashes = [t for t in tokens if t in ISOSEQ_RESERVED_OPTIONS]
+    if clashes:
+        return (f"ERROR: 'curation.isoseq_args' must not contain {clashes}: the pipeline already sets "
+                "the threads, logging and collapse behaviour for `isoseq collapse`.")
+    return None
+
+
+ISOSEQ_NON_BAM_WARNING = (
+    "'curation.reconstruction' is 'isoseq' but 'project.input' is not a PacBio BAM. `isoseq cluster2` "
+    "requires an unmapped PacBio BAM, so the reads will be wrapped in one using a template "
+    "(envs/pacbio_mock.bam). Read names, sequences and base qualities are preserved; the run metadata "
+    "(read group, movie, instrument, and the per-read PacBio tags such as zm/np/rq) is synthetic and must "
+    "not be treated as provenance. Use it at your own risk, and confirm first that the reads really are "
+    "CCS/HiFi: subreads wrapped this way are accepted silently by every downstream tool "
+    "(check with `samtools stats` - HiFi is below ~2% error)."
+)
 
 
 AB_INITIO_TRAINING_ERROR = (
@@ -185,6 +218,13 @@ def check_inputs(config):
     iq_error = validate_isoquant_args(cur.get("isoquant_args", ""))
     if iq_error:
         die(iq_error)
+
+    if cur.get("reconstruction", "isoquant") == "isoseq":
+        iss_error = validate_isoseq_args(cur.get("isoseq_args", ""))
+        if iss_error:
+            die(iss_error)
+        if not str(prj.get("input", "")).lower().endswith(".bam"):
+            warn(ISOSEQ_NON_BAM_WARNING)
 
     if training_mode in ["mixed", "busco_only"] and not trn.get("lineage"):
         die(f"ERROR: 'training.lineage' (BUSCO lineage) is required when training.mode is '{training_mode}'.")

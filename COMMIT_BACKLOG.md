@@ -2,6 +2,18 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-11] - IsoSeq3 Reconstruction Route (`curation.reconstruction`)
+- **Branch**: `dev-IsoSeq_v2`
+- **Goal**: The curation ablation showed that the SQANTI3 rules filter costs locus sensitivity and returns nothing at gene level when the transcriptome comes from IsoQuant. The archived runs suggest why: IsoQuant emits 1.5-10.7x fewer models from the same reads than the IsoSeq3 route used by Paniagua et al., having already removed the ORF-less fragments the filter targets. Testing that requires the IsoSeq3 route on current code and current data, so it becomes a selectable reconstruction route rather than a hand-built comparison.
+- **Summary**:
+    - New key `curation.reconstruction` (`isoquant` default, `isoseq`), plus `curation.isoseq_args`; validated in `functions.smk` and `input_check.py` (`ALLOWED_VALUES`, `ISOSEQ_RESERVED_OPTIONS`, `validate_isoseq_args`).
+    - `get_transcriptome()` in `functions.smk` returns the transcript-models GTF and the FL-count matrix of the active route; `run_sqanti` and `restore_gene_ids` consume only those, so nothing downstream of the transcriptome changes. `run_isoquant` is guarded by the route and now declares `discovered_transcript_counts.tsv` as an output; `run_sqanti` takes the FL matrix as an **input** rather than a params, so the producing rule is scheduled on both routes.
+    - New `rules/isoseq_reconstruction.smk` (included only for the isoseq route): `fastq2bam` (non-BAM input only), `isoseq_cluster`, `pbmm2_index`, `pbmm2_align`, `isoseq_collapse`, `collapse_fl_counts`. Clustering always runs: it is a mandatory step of the Iso-Seq workflow, not a tuning choice.
+    - `scripts/fastq2bam.py` restored from the pre-refactor `dev-IsoSeq` branch and rewritten in the current script style (pure functions, `main_snakemake()`, CLI, no stdout banner), with `envs/pacbio_mock.bam`. It preserves read names, sequences and qualities and copies everything else from the template, so `input_check.py` warns that the run metadata is not provenance and that subreads wrapped this way are accepted silently.
+    - New `scripts/collapse_counts_to_fl.py` converts the `isoseq collapse` abundance table to the two-column matrix SQANTI3 expects, using `fl_assoc` (reads) rather than `count_fl` (clusters) so the two routes stay comparable.
+    - New `envs/isoseq.yaml` pinned to the versions validated on Garnatxa (isoseq 4.3.0, pbmm2 26.1.99, pysam 0.24.0, biopython 1.87); new `dir.out.isoseq*` and `dir.tools_pbmm2` directories.
+    - Tests: `tests/test_collapse_counts_to_fl.py` (7), `tests/test_fastq2bam.py` (8, skipped without pysam/biopython); dry-run fixture `mixed_split_isoseq.yaml`. 98 tests and 8/8 dry-run configurations pass; the IsoQuant DAG is unchanged at 40 jobs, the IsoSeq one is 45.
+
 ## [2026-09-09] - License, Citation File and Zenodo Metadata
 - **Branch**: `dev-IsoQuant`
 - **Goal**: Make the repository archivable on Zenodo for the v1.0 release (Zenodo checklist items 2 and 5).

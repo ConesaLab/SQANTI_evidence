@@ -1,0 +1,19 @@
+# Dry-run fixture: IsoSeq3 reconstruction route (curation.reconstruction=isoseq) with a FASTQ input,
+# which also exercises the fastq2bam conversion branch. Paths are relative to the repo root.
+project:
+  genome: "tests/dryrun/data/genome.fa"
+  input: "tests/dryrun/data/reads.fastq"
+  outdir: "tests/dryrun/results/mixed_split_isoseq"
+  toolsdir: "tests/dryrun/tools"
+training:
+  mode: "mixed"
+  lineage: "dummy_odb12"
+prediction:
+  species: "dryrun_species_isoseq"
+  mode: "split"
+  utr: False
+curation:
+  mode: "placebo"
+  reconstruction: "isoseq"
+evaluation:
+  reference_gtf: "tests/dryrun/data/reference.gtf"

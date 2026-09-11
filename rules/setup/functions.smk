@@ -5,7 +5,7 @@ import logging
 # Shared validation tables/messages live in scripts/input_check.py (plain Python, no Snakemake
 # dependency) so the wrapper pre-flight and this parse-time validation cannot drift apart.
 sys.path.insert(0, os.path.join(workflow.basedir, "scripts"))
-from input_check import ALLOWED_VALUES, validate_modes, validate_isoquant_args
+from input_check import ALLOWED_VALUES, validate_modes, validate_isoquant_args, validate_isoseq_args
 
 def validate_and_fill_config(config_dict):
     """
@@ -89,6 +89,19 @@ def validate_and_fill_config(config_dict):
     iq_error = validate_isoquant_args(cur["isoquant_args"])
     if iq_error:
         raise ValueError(iq_error)
+
+    # Which tool reconstructs the transcriptome from the reads. Both routes must produce the same two
+    # files (transcript models GTF + FL count matrix); see get_transcriptome().
+    cur.setdefault("reconstruction", "isoquant")
+    if cur["reconstruction"] not in ALLOWED_VALUES[("curation", "reconstruction")]:
+        raise ValueError(f"ERROR: 'curation.reconstruction' must be one of "
+                         f"{ALLOWED_VALUES[('curation', 'reconstruction')]}.")
+    # Extra options appended verbatim to `isoseq collapse`; options the rule sets itself are rejected.
+    cur.setdefault("isoseq_args", "")
+    if cur["reconstruction"] == "isoseq":
+        iss_error = validate_isoseq_args(cur["isoseq_args"])
+        if iss_error:
+            raise ValueError(iss_error)
     if cur["data_type"] not in ALLOWED_VALUES[("curation", "data_type")]:
         raise ValueError(f"ERROR: 'curation.data_type' must be one of {ALLOWED_VALUES[('curation', 'data_type')]}.")
     if not cur.get("filter_rules") or not os.path.isfile(cur.get("filter_rules")):
@@ -153,15 +166,38 @@ def get_sample_name(file):
     logger.debug(f"Detected sample name: {sample}, file type: {filetype}")
     return sample, filetype
 
-def get_pbmm2_input(filetype, config, sample):
+def get_isoseq_reads(filetype, config, sample):
+    """Unmapped PacBio BAM for `isoseq cluster2`: the input itself, or the fastq2bam conversion of it.
+
+    `isoseq cluster2` only reads PacBio BAM, so a FASTA/FASTQ input is wrapped in PacBio records by
+    rule fastq2bam. That conversion copies the run metadata from a template, which input_check warns
+    about; see docs/isoseq_route_implementation_plan.md.
+    """
     logger = logging.getLogger('pipeline')
     if filetype == ".bam":
-        logger.debug(f"Input is BAM, using direct input: {config.project.input}")
+        logger.debug(f"IsoSeq route: input is already a PacBio BAM: {config.project.input}")
         return config.project.input
+    result = os.path.join(dir.out.isoseq, f"{sample}.bam")
+    logger.debug(f"IsoSeq route: input is {filetype}, will use the converted BAM: {result}")
+    return result
+
+
+def get_transcriptome(config, sample):
+    """Transcript models and FL-count matrix produced by the active reconstruction route.
+
+    Both routes satisfy one contract: a GTF carrying gene_id/transcript_id attributes, and a
+    two-column <transcript_id>TAB<count> matrix. run_sqanti and restore_gene_ids consume only these,
+    so everything downstream of the transcriptome is identical for both routes.
+    """
+    logger = logging.getLogger('pipeline')
+    if config.curation.reconstruction == "isoseq":
+        gtf = os.path.join(dir.out.isoseq_collapsed, f"{sample}.collapsed.gff")
+        counts = os.path.join(dir.out.isoseq_collapsed, f"{sample}.fl_counts.tsv")
     else:
-        result = os.path.join(dir.out.isoquant, f"{sample}.bam")
-        logger.debug(f"Input is not BAM, will use converted file: {result}")
-        return result
+        gtf = os.path.join(dir.out.isoquant, sample, f"{sample}.transcript_models.gtf")
+        counts = os.path.join(dir.out.isoquant, sample, f"{sample}.discovered_transcript_counts.tsv")
+    logger.debug(f"Transcriptome route '{config.curation.reconstruction}': {gtf}")
+    return {"gtf": gtf, "counts": counts}
 
 def get_chromosomes(file):
     logger = logging.getLogger('pipeline')

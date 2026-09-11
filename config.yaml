@@ -29,6 +29,12 @@ prediction:
 curation:
   mode: "placebo"                 # Reference given to SQANTI3: ab_initio, placebo, user
   user_gtf: ""                    # Path to custom GTF if mode is 'user'
+  reconstruction: "isoquant"      # Transcriptome reconstruction: isoquant (default) or isoseq
+                                  #   (isoseq cluster2 -> pbmm2 align -> isoseq collapse). The isoseq
+                                  #   route needs an unmapped PacBio BAM; a FASTA/FASTQ input is wrapped
+                                  #   in one using a template, which fakes the run metadata (a warning
+                                  #   is printed). PacBio data only.
+  isoseq_args: ""                 # Extra `isoseq collapse` options, passed verbatim (isoseq route only)
   data_type: "pacbio"             # IsoQuant --data_type: pacbio (CCS/HiFi), nanopore, assembly
   isoquant_args: ""               # Extra IsoQuant options, passed verbatim. Iso-Seq FLNC reads have their
                                   #   poly(A) tails removed by `isoseq refine`, and IsoQuant needs a tail to

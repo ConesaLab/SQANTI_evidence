@@ -46,6 +46,13 @@ dir.out.ab_augustus_training = os.path.join(dir.out.ab_augustus, "training")
 ## IsoQuant
 dir.out.isoquant = os.path.join(dir.out.base, "isoquant")
 
+## IsoSeq3 reconstruction (only used when curation.reconstruction == "isoseq")
+dir.tools_pbmm2 = os.path.join(dir.tools, "pbmm2")
+dir.out.isoseq = os.path.join(dir.out.base, "isoseq")
+dir.out.isoseq_cluster = os.path.join(dir.out.isoseq, "cluster")
+dir.out.isoseq_mapping = os.path.join(dir.out.isoseq, "mapping")
+dir.out.isoseq_collapsed = os.path.join(dir.out.isoseq, "collapsed")
+
 ## Hints
 dir.out.evidence_driven = os.path.join(dir.out.base, "evidence_driven")
 dir.out.ed_sqanti = os.path.join(dir.out.evidence_driven, "sqanti")

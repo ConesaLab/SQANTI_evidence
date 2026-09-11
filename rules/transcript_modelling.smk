@@ -1,44 +1,57 @@
 sp_name = config.prediction.species
 
+# Transcript models + FL counts of the active reconstruction route (curation.reconstruction).
+# Both routes satisfy the same contract, so every rule below is route-agnostic.
+transcriptome = get_transcriptome(config, sample)
 
-rule run_isoquant:
-    input:
-        reads = config.project.input,
-        ref = config.project.genome,
-    output:
-        gtf = os.path.join(dir.out.isoquant,sample, f"{sample}.transcript_models.gtf")
-    conda:
-        f"{dir.envs}/isoquant.yaml"
-    threads:
-        config.resources.big.cpus
-    resources:
-        cpus_per_task = config.resources.big.cpus,
-        slurm_extra = f"\'--qos={config.resources.big.qos}\'",
-        mem = config.resources.big.mem,
-        runtime = config.resources.big.time
-    params:
-        input_flag = lambda wildcards, input: get_isoquant_input_flag(input.reads),
-        outdir = dir.out.isoquant,
-        data_type = config.curation.data_type,
-        prefix = sample,
-        extra = config.curation.isoquant_args
-    log:
-        os.path.join(dir.logs, "isoquant.log")
-    shell:
-        """
-        isoquant \
-            --reference {input.ref} \
-            {params.input_flag} \
-            --data_type {params.data_type} \
-            --prefix {params.prefix} \
-            --threads {threads} \
-            {params.extra} \
-            -o {params.outdir} &> {log}
-        """
+
+if config.curation.reconstruction == "isoquant":
+
+    rule run_isoquant:
+        input:
+            reads = config.project.input,
+            ref = config.project.genome,
+        output:
+            gtf = os.path.join(dir.out.isoquant,sample, f"{sample}.transcript_models.gtf"),
+            # IsoQuant writes this alongside the models; declared so run_sqanti can depend on the
+            # FL-count matrix by name on either reconstruction route.
+            counts = os.path.join(dir.out.isoquant,sample, f"{sample}.discovered_transcript_counts.tsv")
+        conda:
+            f"{dir.envs}/isoquant.yaml"
+        threads:
+            config.resources.big.cpus
+        resources:
+            cpus_per_task = config.resources.big.cpus,
+            slurm_extra = f"\'--qos={config.resources.big.qos}\'",
+            mem = config.resources.big.mem,
+            runtime = config.resources.big.time
+        params:
+            input_flag = lambda wildcards, input: get_isoquant_input_flag(input.reads),
+            outdir = dir.out.isoquant,
+            data_type = config.curation.data_type,
+            prefix = sample,
+            extra = config.curation.isoquant_args
+        log:
+            os.path.join(dir.logs, "isoquant.log")
+        shell:
+            """
+            isoquant \
+                --reference {input.ref} \
+                {params.input_flag} \
+                --data_type {params.data_type} \
+                --prefix {params.prefix} \
+                --threads {threads} \
+                {params.extra} \
+                -o {params.outdir} &> {log}
+            """
+
 
 rule run_sqanti:
     input:
-        isoforms=os.path.join(dir.out.isoquant, sample, f"{sample}.transcript_models.gtf"),
+        isoforms=transcriptome["gtf"],
+        # Declared as an input, not a params: on the IsoSeq route this file comes from its own rule
+        # (collapse_fl_counts) and would otherwise never be built.
+        fl_matrix=transcriptome["counts"],
         ref_gff=get_sqanti_gtf(config),
         ref_genome=config.project.genome,
     output:
@@ -56,11 +69,10 @@ rule run_sqanti:
         runtime=config.resources.medium.time,
     params:
         sp_name=sp_name,
-        fl_matrix=os.path.join(dir.out.isoquant, sample, f"{sample}.discovered_transcript_counts.tsv"),
     shell:
         """
         sqanti3_qc.py --isoforms {input.isoforms} --refGTF {input.ref_gff} --refFasta {input.ref_genome} \
-            --dir {dir.out.ed_sqanti} --output {params.sp_name} -t {threads} --include_ORF -fl {params.fl_matrix} --report skip &> {log}
+            --dir {dir.out.ed_sqanti} --output {params.sp_name} -t {threads} --include_ORF -fl {input.fl_matrix} --report skip &> {log}
         mv {dir.out.ed_sqanti}/{params.sp_name}_corrected.cds.gff3 {output.gtf}
         """
 
@@ -103,7 +115,7 @@ rule restore_gene_ids:
     counts and the dominant-isoform selection see real genes again.
     """
     input:
-        models=os.path.join(dir.out.isoquant, sample, f"{sample}.transcript_models.gtf"),
+        models=transcriptome["gtf"],
         gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
         classification=os.path.join(dir.out.ed_sqanti, f"{sp_name}_RulesFilter_classification.txt"),
     output:

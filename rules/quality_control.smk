@@ -8,10 +8,14 @@ rule agat_cleaning:
     output:
         os.path.join(dir.out.evidence_driven, "Final_clean_prediction.gff")
     resources:
-        slurm_extra = f"\'--qos={config.resources.small.qos}\'",
+        slurm_extra = f"\'--qos={config.resources.medium.qos}\'",
         cpus_per_task = config.resources.small.cpus,
+        # AGAT is single-threaded Perl and holds the whole annotation in memory, so its footprint
+        # tracks annotation size: 0.6 GB on Arabidopsis but over 8 GB on human (OOM 2026-09-14).
+        # It also needs time - it ran past the 2 h small.time limit on both ablation arms
+        # (2026-09-12). Hence medium for both, rather than small for either.
         mem = config.resources.medium.mem,
-        runtime = config.resources.small.time
+        runtime = config.resources.medium.time
     log:
         os.path.join(dir.logs, "agat_cleaning.log")
     conda:

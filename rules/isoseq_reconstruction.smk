@@ -120,10 +120,14 @@ rule isoseq_collapse:
     params:
         extra=config.curation.isoseq_args,
     resources:
-        slurm_extra=f"'--qos={config.resources.medium.qos}'",
+        # Collapse scales far worse than linearly in aligned records: 46k alignments (Arabidopsis)
+        # finish in under a minute, but 242k (C. elegans) and 380k (zebrafish) both ran past the 10 h
+        # medium.time limit on 2026-09-12. It is a big-tier step, not a medium one. Memory is not the
+        # constraint - measured 2.8 GB peak - so mem stays on big.mem for headroom only.
+        slurm_extra=f"'--qos={config.resources.big.qos}'",
         cpus_per_task=config.resources.medium.cpus,
         mem=config.resources.big.mem,
-        runtime=config.resources.medium.time,
+        runtime=config.resources.big.time,
     shell:
         """
         isoseq collapse --do-not-collapse-extra-5exons {params.extra} \

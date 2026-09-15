@@ -23,7 +23,7 @@ if config.prediction.mode != "split":
         params:
             name=config.prediction.species,
         shell:
-            "augustus --species={params.name} {input.genome} --protein=on --codingseq=on > {output} 2> {log}"
+            "augustus --species={params.name} {input.genome} --protein=on --codingseq=on --softmasking=1 > {output} 2> {log}"
 
 rule gff2gtf:
     input:

@@ -113,7 +113,7 @@ if config.prediction.mode != "split":
             """
             augustus --species={params.name} {input.genome} --hintsfile={input.gff} \
             --extrinsicCfgFile={params.extcfg} --protein=on --codingseq=on \
-            --alternatives-from-evidence=true > {output} 2> {log}
+            --softmasking=1 --alternatives-from-evidence=true > {output} 2> {log}
             """
 
 

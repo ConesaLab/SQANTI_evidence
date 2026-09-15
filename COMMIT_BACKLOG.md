@@ -2,6 +2,14 @@
 
 This file tracks the history of commits made by the AI agent, providing a high-level summary of the changes and the reasoning behind them.
 
+## [2026-09-15] - Default Filter Aligned with the Benchmark, Augustus Soft-masking Explicit
+- **Branch**: `dev-IsoSeq_v2`
+- **Goal**: Every benchmark and ERGA run was curated with the six-rule `filter_rules.json` kept in `genomes_benchmark/data`, while the packaged default shipped five: the release could not reproduce the paper's filter. Separately, Augustus was relying on AUGUSTUS 3.5's default of honouring soft-masking; the ERGA genomes turned out to be unmasked (0% lowercase) and produced 280k Tier 2 genes on Alopecurus, which made it worth stating the behaviour rather than inheriting it.
+- **Summary**:
+    - `envs/filter_rules.json`: added `"coding": "coding"` (SQANTI3 `coding` column, values `coding`/`non_coding`). On Arabidopsis it removes 445 of 17,241 isoforms that the other five rules let through; the packaged default is now identical to the benchmark rule set. This changes default output, so it is a minor-version change (v1.1.0) rather than a patch.
+    - `--softmasking=1` added to all four Augustus invocations (`evidence_driven.smk:augustus_hints`, `split_augustus.smk:ed_augustus_per_chromosome` and the ab initio per-chromosome rule, `ab_initio.smk`). Measured on a 3 Mb soft-masked Arabidopsis chunk: default = `--softmasking=1` = 629 genes, `--softmasking=0` = 775, so this is a no-op on AUGUSTUS 3.5 and a guard against a future default change.
+    - 98 tests and 8/8 dry-run configurations pass; DAGs unchanged.
+
 ## [2026-09-11] - IsoSeq3 Reconstruction Route (`curation.reconstruction`)
 - **Branch**: `dev-IsoSeq_v2`
 - **Goal**: The curation ablation showed that the SQANTI3 rules filter costs locus sensitivity and returns nothing at gene level when the transcriptome comes from IsoQuant. The archived runs suggest why: IsoQuant emits 1.5-10.7x fewer models from the same reads than the IsoSeq3 route used by Paniagua et al., having already removed the ORF-less fragments the filter targets. Testing that requires the IsoSeq3 route on current code and current data, so it becomes a selectable reconstruction route rather than a hand-built comparison.

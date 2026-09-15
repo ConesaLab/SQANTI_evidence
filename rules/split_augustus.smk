@@ -49,7 +49,7 @@ rule ed_augustus_per_chromosome:
         chromosome={dir.tools_reference}/{genome_name}/{wildcards.chromosome}.fasta
         augustus --species={params.name} $chromosome --hintsfile={input.gff} \
         --extrinsicCfgFile={params.extcfg} --protein=on --codingseq=on \
-        --alternatives-from-evidence=true \
+        --softmasking=1 --alternatives-from-evidence=true \
          > {output}  2>{log}
         """
 
@@ -112,7 +112,7 @@ rule ab_augustus_per_chromosome:
     shell:
         """
         chromosome={dir.tools_reference}/{genome_name}/{wildcards.chromosome}.fasta
-        augustus --species={params.name} $chromosome --protein=on --codingseq=on > {output} 2>{log} 
+        augustus --species={params.name} $chromosome --protein=on --codingseq=on --softmasking=1 > {output} 2>{log}
         """
 
 rule merge_ab_predictions:

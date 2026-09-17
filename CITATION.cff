@@ -19,8 +19,8 @@ authors:
 repository-code: "https://github.com/ConesaLab/SQANTI_evidence"
 url: "https://github.com/ConesaLab/SQANTI_evidence"
 license: GPL-3.0
-version: 1.0.0
-date-released: 2026-09-09
+version: 1.1.0
+date-released: 2026-09-17
 keywords:
   - genome annotation
   - long-read sequencing

@@ -77,10 +77,38 @@ rule run_sqanti:
         """
 
 
+rule noise_diagnostic:
+    """Reference-free noise estimate of the reconstructed transcriptome (scripts/noise_metrics.py).
+
+    Runs on the SQANTI3 classification before the rules filter. The non-coding fraction tracked the
+    reference-based junk fraction on the eight benchmark species (rho 0.88); the log places the run on
+    that scale and says when the FL>=10 rescue paths of the default filter should be tightened.
+    filter_isoforms declares the table as an input so the diagnostic is always produced.
+    """
+    input:
+        classification=os.path.join(dir.out.ed_sqanti, f"{sp_name}_classification.txt"),
+    output:
+        os.path.join(dir.out.qc, "noise_metrics.tsv"),
+    log:
+        os.path.join(dir.logs, "noise_diagnostic.log"),
+    conda:
+        os.path.join(dir.envs, "basic.yaml")
+    resources:
+        slurm_extra=f"'--qos={config.resources.small.qos}'",
+        cpus_per_task=config.resources.small.cpus,
+        mem=config.resources.small.mem,
+        runtime=config.resources.small.time,
+    params:
+        sample=sp_name,
+    script:
+        os.path.join(dir.scripts, "noise_metrics.py")
+
+
 rule filter_isoforms:
     input:
         classification=os.path.join(dir.out.ed_sqanti, f"{sp_name}_classification.txt"),
         gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}_corrected.cds.gtf"),
+        noise=os.path.join(dir.out.qc, "noise_metrics.tsv"),   # ordering only: diagnostic before the filter
     output:
         gtf=os.path.join(dir.out.ed_sqanti, f"{sp_name}.filtered.gtf"),
         classif=os.path.join(dir.out.ed_sqanti, f"{sp_name}_RulesFilter_classification.txt")

@@ -11,7 +11,16 @@ Logic:
       (prevents redundant dual-transcripts and precision collapse).
     - If non-overlapping multi-exon -> RETAIN as gap-filler for unexpressed genes.
     - If non-overlapping single-exon -> Retain if length >= min_monoexon_len or hint-supported.
+  - Every written row that carries GTF attributes gets a `tier` attribute naming its origin:
+    `tier "SQANTI_curated";` (Tier 1) or `tier "Augustus";` (Tier 2), so downstream tools and the
+    paper's scripts no longer infer the tier from the source column. Augustus `gene`/`transcript`
+    rows, which carry a bare id in column 9, are rewritten with `gene_id`/`transcript_id` attributes
+    so the tier is present at every feature level.
 """
+
+TIER1_NAME = "SQANTI_curated"
+TIER2_NAME = "Augustus"
+
 
 import os
 import sys
@@ -33,6 +42,38 @@ def extract_gene_id_from_attrs(attrs_str):
     if m:
         return m.group(1)
     return None
+
+
+BARE_ID_RE = re.compile(r"^[^\s;\"=]+$")
+
+
+def add_tier(line, tier):
+    """Return the GTF line with `tier "<tier>";` appended to its attribute column.
+
+    Rows whose column 9 is a GTF attribute list get the tag appended. Augustus ``gene`` and
+    ``transcript`` rows carry a bare id there (``g2`` / ``g2.t1``); they are rewritten as proper GTF
+    attributes (``gene_id "g2"; tier ...`` / ``transcript_id "g2.t1"; gene_id "g2"; tier ...``) so
+    the tier reaches every feature level in the final GFF3 (AGAT propagates attributes only from
+    what is present). Anything else is returned unchanged. The trailing newline is preserved.
+    """
+    body = line.rstrip("\n")
+    parts = body.split("\t")
+    if len(parts) < 9:
+        return body + "\n"
+    attrs = parts[8].strip()
+    feature = parts[2]
+    if "transcript_id" in attrs or "gene_id" in attrs:
+        if not attrs.endswith(";"):
+            attrs += ";"
+        parts[8] = f'{attrs} tier "{tier}";'
+    elif BARE_ID_RE.match(attrs) and feature == "gene":
+        parts[8] = f'gene_id "{attrs}"; tier "{tier}";'
+    elif BARE_ID_RE.match(attrs) and feature in ("transcript", "mRNA"):
+        gid = attrs.rsplit(".t", 1)[0] if ".t" in attrs else attrs
+        parts[8] = f'transcript_id "{attrs}"; gene_id "{gid}"; tier "{tier}";'
+    else:
+        return body + "\n"
+    return "\t".join(parts) + "\n"
 
 
 def parse_sqanti_gtf(filepath):
@@ -306,7 +347,7 @@ def resolve_tiers(
         # Step 1: Write all Tier 1 SQANTI3 models
         for gid, lines in sqanti_genes.items():
             for line in lines:
-                out.write(line)
+                out.write(add_tier(line, TIER1_NAME))
             tier1_count += 1
 
         # Step 2: Evaluate Augustus predictions
@@ -341,7 +382,7 @@ def resolve_tiers(
 
             # Retain non-overlapping Augustus gap-filler
             for line in aug_genes[gid]:
-                out.write(line)
+                out.write(add_tier(line, TIER2_NAME))
             tier2_gap_count += 1
 
     log("Resolution Complete:")

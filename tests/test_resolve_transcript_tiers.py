@@ -292,3 +292,47 @@ def test_main_snakemake_entry_point_writes_output_and_log(mock_sqanti_gtf, mock_
     stats = rtt.main_snakemake(smk)
     assert out.is_file() and log.is_file()
     assert f"Tier 1 (SQANTI3 empirical models retained) : {stats['tier1']}" in log.read_text()
+
+
+def test_tier_attribute_on_every_output_row(mock_sqanti_gtf, mock_augustus_gff):
+    """Every row with GTF attributes carries a named tier; bare-id Augustus rows are untouched."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        sqanti_path = os.path.join(tmpdir, "sqanti.filtered.gtf")
+        augustus_path = os.path.join(tmpdir, "augustus.gff")
+        out_path = os.path.join(tmpdir, "resolved.gtf")
+        with open(sqanti_path, "w") as f:
+            f.write(mock_sqanti_gtf)
+        with open(augustus_path, "w") as f:
+            f.write(mock_augustus_gff)
+        rtt.resolve_tiers(sqanti_gtf=sqanti_path, augustus_gff=augustus_path, output_gtf=out_path,
+                          min_monoexon_len=300, filter_mode="medium")
+        with open(out_path) as f:
+            rows = [l.rstrip("\n") for l in f if l.strip()]
+    assert rows and not any(r.startswith(";") for r in rows), "no attribute may spill onto its own line"
+    for r in rows:
+        cols = r.split("\t")
+        assert len(cols) == 9
+        expected = rtt.TIER1_NAME if cols[1] == "SQANTI3" else rtt.TIER2_NAME
+        assert cols[8].endswith(f'tier "{expected}";'), r          # every row, including Augustus gene/transcript
+        assert cols[8].count("tier ") == 1, r
+        assert 'gene_id "' in cols[8], r
+        if cols[2] in ("transcript", "exon", "CDS"):
+            assert 'transcript_id "' in cols[8], r
+    assert any('tier "SQANTI_curated"' in r for r in rows) and any('tier "Augustus"' in r for r in rows)
+    aug_tx = [r for r in rows if r.split("\t")[1] == "AUGUSTUS" and r.split("\t")[2] == "transcript"]
+    assert aug_tx and all('transcript_id "g2_gap.t1"; gene_id "g2_gap"; tier "Augustus";' in r or 'gene_id "g4_mono_long"' in r for r in aug_tx), aug_tx
+
+
+def test_add_tier_helper():
+    assert rtt.add_tier('c\tSQANTI3\texon\t1\t9\t.\t+\t.\ttranscript_id "t1"; gene_id "g1";\n', "SQANTI_curated") == \
+        'c\tSQANTI3\texon\t1\t9\t.\t+\t.\ttranscript_id "t1"; gene_id "g1"; tier "SQANTI_curated";\n'
+    # missing trailing semicolon is repaired; bare Augustus ids are left alone; newline always restored
+    assert rtt.add_tier('c\tAUGUSTUS\tCDS\t1\t9\t.\t+\t0\ttranscript_id "g1.t1"; gene_id "g1"', "Augustus").endswith(
+        'gene_id "g1"; tier "Augustus";\n')
+    assert rtt.add_tier("c\tAUGUSTUS\tgene\t1\t9\t1\t+\t.\tg1\n", "Augustus") == \
+        'c\tAUGUSTUS\tgene\t1\t9\t1\t+\t.\tgene_id "g1"; tier "Augustus";\n'
+    assert rtt.add_tier("c\tAUGUSTUS\ttranscript\t1\t9\t1\t+\t.\tg1.t1\n", "Augustus") == \
+        'c\tAUGUSTUS\ttranscript\t1\t9\t1\t+\t.\ttranscript_id "g1.t1"; gene_id "g1"; tier "Augustus";\n'
+    # a bare-id row of another feature type, or a short row, is left alone
+    assert rtt.add_tier("c\tAUGUSTUS\tstart_codon\t1\t3\t.\t+\t0\tg1\n", "Augustus") == "c\tAUGUSTUS\tstart_codon\t1\t3\t.\t+\t0\tg1\n"
+    assert rtt.add_tier("# comment\n", "Augustus") == "# comment\n"

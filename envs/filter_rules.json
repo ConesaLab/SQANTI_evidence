@@ -1,12 +1,36 @@
 {
-    "rest":[
+    "rest": [
         {"exons": 1,
-        "perc_A_downstream_TTS": [0,59],
-        "all_canonical": "canonical",
-        "coding": "coding",
-        "CDS_length": 100,
-        "predicted_NMD": "FALSE",
-        "psauron_score": 0.7
+         "perc_A_downstream_TTS": [0, 59],
+         "all_canonical": "canonical",
+         "coding": "coding",
+         "CDS_length": 100,
+         "psauron_score": 0.7,
+         "predicted_NMD": "FALSE"
+        },
+        {"exons": 1,
+         "all_canonical": "canonical",
+         "coding": "coding",
+         "CDS_length": 100,
+         "psauron_score": 0.7,
+         "predicted_NMD": "FALSE",
+         "FL": 10
+        },
+        {"exons": 1,
+         "all_canonical": "canonical",
+         "coding": "coding",
+         "CDS_length": 100,
+         "predicted_NMD": "FALSE",
+         "FL": 10,
+         "perc_A_downstream_TTS": [0, 59]
+        },
+        {"exons": 1,
+         "coding": "coding",
+         "CDS_length": 100,
+         "psauron_score": 0.7,
+         "predicted_NMD": "FALSE",
+         "FL": 10,
+         "perc_A_downstream_TTS": [0, 59]
         }
     ]
 }

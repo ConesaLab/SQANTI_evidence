@@ -83,7 +83,7 @@ All inputs and parameters are given in a YAML file. Use `config.yaml` in this re
 
 | Key | Description |
 | :--- | :--- |
-| `genome` | Reference genome FASTA to annotate. **Required.** A softmasked assembly is recommended. |
+| `genome` | Reference genome FASTA to annotate. **Required.** Use a soft-masked assembly: Augustus is run with `--softmasking=1` and treats lowercase as repeat. On unmasked genomes Tier 2 inflates with repeat-derived models (on six ERGA genomes soft-masking with Red alone removed 53–87 % of Tier 2 genes with BUSCO completeness unchanged or higher). Red, RepeatMasker or the Ensembl `dna_sm` assemblies are all fine. |
 | `input` | Long reads in FASTQ, FASTA or unaligned BAM format. **Required.** See [Input data](#input-data). |
 | `outdir` | Output directory (default `SQANTI_evidence_results`). |
 | `toolsdir` | Directory where conda environments and databases are installed. **Required.** Use an absolute path. |
@@ -124,7 +124,7 @@ Controls how the Augustus species model is trained.
 | `isoseq_args` | Extra options appended verbatim to `isoseq collapse` (default empty), used only when `reconstruction` is `isoseq`. Options the rule sets itself (`-j`, the logging flags and `--do-not-collapse-extra-5exons`) are rejected. |
 | `data_type` | Sequencing technology passed to IsoQuant: `pacbio` (CCS/HiFi, default), `nanopore`, or `assembly`. Ignored when `reconstruction` is `isoseq`. |
 | `isoquant_args` | Extra options appended verbatim to the IsoQuant command (default empty). Options the pipeline sets itself, such as `--reference`, `--data_type`, `--prefix`, `--threads`, `-o` and the input flag, are rejected. Typical use: Iso-Seq FLNC reads have their poly(A) tails removed by `isoseq refine`, and IsoQuant needs a tail to build novel single-exon transcripts and to strand unspliced reads; for these oriented reads set `"--polya_trimmed all --stranded forward"`. `--polya_trimmed all` assumes reads oriented 5'→3', so do not use it for raw ONT cDNA. |
-| `filter_rules` | SQANTI3 rules-filter JSON (default `envs/filter_rules.json`). The default rules avoid structural categories so that filtering does not depend on the reference used. |
+| `filter_rules` | SQANTI3 rules-filter JSON (default `envs/filter_rules.json`). The default is a set of four alternative paths, and an isoform is kept if it passes any of them: (1) the strict rule — multi-exon, no intra-priming signal (`perc_A_downstream_TTS` ≤ 59), canonical junctions, coding, CDS ≥ 100 aa, not NMD, `psauron_score` ≥ 0.7; (2)–(4) the same rule with one of the intra-priming, psauron or canonical-junction checks waived for isoforms supported by at least 10 full-length reads (`FL`). On eight benchmark species the rescue paths add 1–26 % more reference-exact genes and more multi-isoform genes to Tier 1 at unchanged precision; they also admit more unsupported isoforms when the transcriptome is noisy, which the noise diagnostic (below) reports. To tighten, copy the JSON, raise the `FL` value of paths 2–4 (e.g. to 20) and point `filter_rules` at the copy; `envs/filter_rules.strict.json` (path 1 only, the filter used until v1.0) is shipped for the no-rescue case. The pipeline never alters a rules file: what you point `filter_rules` at is what SQANTI3 runs. The rules avoid structural categories so that filtering does not depend on the reference used. |
 
 ### `evaluation`
 
@@ -163,12 +163,12 @@ Set `curation.data_type` to match the technology (`pacbio` or `nanopore`). Alrea
 ## Pipeline workflow
 
 1. **Transcript reconstruction.** IsoQuant aligns the reads to the genome and builds transcript models with full-length read counts.
-2. **Curation.** SQANTI3 classifies the models against the reference chosen in `curation.mode` and the rules filter removes artefacts (intra-priming, RT-switching, non-canonical junctions, short or non-coding models). The surviving transcripts are the **Tier 1** set.
+2. **Curation.** SQANTI3 classifies the models against the reference chosen in `curation.mode`. A reference-free **noise diagnostic** (`quality_control/noise_metrics.tsv`, and the run log) then places the transcriptome on the benchmark scale: the share of non-coding models runs from 3 % (Arabidopsis) to 61 % (zebrafish) and predicts how much of the transcriptome is artefact. The rules filter removes artefacts (intra-priming, non-canonical junctions, short or non-coding models, NMD, low psauron score) while keeping isoforms that fail one of the intra-priming, psauron or canonical checks if ≥ 10 full-length reads support them (see `curation.filter_rules`). The surviving transcripts are the **Tier 1** set.
 3. **Training set assembly.** One dominant complete ORF per gene is extracted from the curated transcripts. In `mixed`/`busco_only` mode BUSCO single-copy genes are added after removing those that overlap or lie within `flanking_region` of a SQANTI gene. Proteins are clustered with CD-HIT at 80% identity to remove redundancy, and the set is capped at `test_size` genes.
 4. **Augustus training.** A new species model is created and trained with `etraining`; genes that fail training are removed and the model is retrained. Stop-codon frequencies are set from the training data.
 5. **Hint generation.** Two hint sources are combined: `lrRNA` hints (introns, CDS, start and stop codons) from the curated transcripts, and `P` hints from Miniprot spliced alignments of the dominant proteins back to the genome, which point Augustus to unexpressed paralogs.
 6. **Prediction.** Augustus runs with the trained model and the combined hints, per chromosome in `split` mode.
-7. **Tier resolution.** Every Tier 1 transcript is written unchanged. An Augustus gene is added as **Tier 2** only if it does not overlap any Tier 1 gene on the same strand; single-exon Tier 2 genes are additionally filtered according to `prediction.filter_mode`.
+7. **Tier resolution.** Every Tier 1 transcript is written unchanged. An Augustus gene is added as **Tier 2** only if it does not overlap any Tier 1 gene on the same strand; single-exon Tier 2 genes are additionally filtered according to `prediction.filter_mode`. Each written row is tagged with a `tier` attribute (`SQANTI_curated` or `Augustus`), which AGAT carries into the final GFF3, so the two layers can be separated downstream without relying on the source column.
 8. **Standardisation and QC.** AGAT converts the result into a clean GFF3, GAQET2 evaluates structural quality against the reads, and, if `evaluation.reference_gtf` is set, GffCompare computes sensitivity and precision at transcript and CDS level.
 
 ---
@@ -190,9 +190,10 @@ outdir/
 │   ├── sqanti/                         <species>_classification.txt, <species>.filtered.gtf, <species>.filtered.regrouped.gtf (IsoQuant gene grouping restored), ...
 │   ├── hints/                          <species>.rna.hints.gff, <species>.protein.hints.gff,
 │   │                                   <species>.hints.gff (combined)
-│   ├── augustus/                       Augustus_prediction.gff, resolved_prediction.gtf (Tier 1 + Tier 2)
+│   ├── augustus/                       Augustus_prediction.gff, resolved_prediction.gtf (Tier 1 + Tier 2; every attribute row carries tier "SQANTI_curated" or tier "Augustus")
 │   └── Final_clean_prediction.gff      final annotation (AGAT-standardised GFF3)
 ├── quality_control/
+│   ├── noise_metrics.tsv               reference-free transcriptome noise diagnostic (non-coding / FL<=2 / mono-exon / multi-fail fractions, verdict)
 │   ├── gaqet2/                         <sample>_GAQET.stats.tsv, <sample>_GAQET.plot.png
 │   └── gffcompare/                     <sample>.stats, <sample>_cds.stats (if reference_gtf is set)
 └── logs/                               one log per rule plus the pipeline log
